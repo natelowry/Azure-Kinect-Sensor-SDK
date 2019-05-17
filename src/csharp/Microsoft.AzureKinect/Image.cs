@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AzureKinect
 {
 
-    public class ArrayImage<T> : Image where T : unmanaged
+    public class ManagedImage : Image
     {
 
         private class CallbackContext
@@ -15,7 +15,7 @@ namespace Microsoft.AzureKinect
             public NativeMethods.k4a_memory_destroy_cb_t CallbackDelegate { get; set; }
         }
 
-        private static NativeMethods.k4a_image_t CreateHandle(ImageFormat format, int width_pixels, int height_pixels, out T[] data)
+        private static NativeMethods.k4a_image_t CreateHandle(ImageFormat format, int width_pixels, int height_pixels, out byte[] data)
         {
             int pixelSize;
             switch (format)
@@ -28,18 +28,13 @@ namespace Microsoft.AzureKinect
                     pixelSize = 2;
                     break;
                 default:
-                    throw new Exception($"Unable to allocate {typeof(T).Name} array for format {format}");
+                    throw new Exception($"Unable to allocate byte array for format {format}");
             }
 
             int stride_bytes = pixelSize * width_pixels;
 
-            if (stride_bytes % Marshal.SizeOf(typeof(T)) != 0)
-            {
-                throw new Exception($"{typeof(T).Name} does not fit evenly on a line of {width_pixels} pixels of type {format}");
-            }
-
             // Allocate the buffer
-            data = new T[height_pixels * stride_bytes / Marshal.SizeOf(typeof(T))];
+            data = new byte[height_pixels * stride_bytes];
 
             CallbackContext context = new CallbackContext()
             {
@@ -74,13 +69,13 @@ namespace Microsoft.AzureKinect
         }
 
 
-        public ArrayImage(ImageFormat format, int width_pixels, int height_pixels) :
-            base(CreateHandle(format, width_pixels, height_pixels, out T[] data))
+        public ManagedImage(ImageFormat format, int width_pixels, int height_pixels) :
+            base(CreateHandle(format, width_pixels, height_pixels, out byte[] data))
         {
             Buffer = data;
         }
 
-        public T[] Buffer { get; private set; }
+        public new byte[] Buffer { get; private set; }
 
         private static void MemoryDestroyCallback(IntPtr buffer, IntPtr context)
         {

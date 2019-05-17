@@ -19,14 +19,14 @@ namespace Microsoft.AzureKinect
             }
         }
 
-        public ArrayImage<ushort> DepthImageToColorCamera(Capture capture)
+        public ManagedImage DepthImageToColorCamera(Capture capture)
         {
             return DepthImageToColorCamera(capture.Depth);
         }
 
-        public ArrayImage<ushort> DepthImageToColorCamera(Image depth)
+        public ManagedImage DepthImageToColorCamera(Image depth)
         {
-            ArrayImage<ushort> image = new ArrayImage<ushort>(ImageFormat.Depth16,
+            ManagedImage image = new ManagedImage(ImageFormat.Depth16,
                 calibration.color_camera_calibration.resolution_width,
                 calibration.color_camera_calibration.resolution_height)
             {
@@ -64,14 +64,14 @@ namespace Microsoft.AzureKinect
             }
         }
 
-        public ArrayImage<BGRA> ColorImageToDepthCamera(Capture capture)
+        public ManagedImage ColorImageToDepthCamera(Capture capture)
         {
             return ColorImageToDepthCamera(capture.Depth, capture.Color);
         }
 
-        public ArrayImage<BGRA> ColorImageToDepthCamera(Image depth, Image color)
+        public ManagedImage ColorImageToDepthCamera(Image depth, Image color)
         {
-            ArrayImage<BGRA> transformed = new ArrayImage<BGRA>(ImageFormat.ColorBGRA32,
+            ManagedImage transformed = new ManagedImage(ImageFormat.ColorBGRA32,
                 calibration.depth_camera_calibration.resolution_width,
                 calibration.depth_camera_calibration.resolution_height)
             {
@@ -114,9 +114,9 @@ namespace Microsoft.AzureKinect
             }
         }
 
-        public ArrayImage<Short3> DepthImageToPointCloud(Image depth, Calibration.DeviceType camera = Calibration.DeviceType.Depth)
+        public ManagedImage DepthImageToPointCloud(Image depth, Calibration.DeviceType camera = Calibration.DeviceType.Depth)
         {
-            ArrayImage<Short3> pointCloud = new ArrayImage<Short3>(ImageFormat.Custom, 
+            ManagedImage pointCloud = new ManagedImage(ImageFormat.Custom, 
                 depth.WidthPixels, depth.HeightPixels);
 
             DepthImageToPointCloud(depth, pointCloud, camera);

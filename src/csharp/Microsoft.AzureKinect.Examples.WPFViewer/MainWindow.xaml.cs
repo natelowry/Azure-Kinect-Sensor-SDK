@@ -15,7 +15,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.AzureKinect;
 using Microsoft.AzureKinect.WPF;
+using System.Buffers;
 using Image = Microsoft.AzureKinect.Image;
+using System.Runtime.InteropServices;
 
 namespace K4aWpfTestApplication
 {
@@ -44,8 +46,8 @@ namespace K4aWpfTestApplication
                 int colorHeight = device.GetCalibration().color_camera_calibration.resolution_height;
 
                 // Allocate image buffers for us to manipulate
-                using (ArrayImage<BGRA> modifiedColor = new ArrayImage<BGRA>(ImageFormat.ColorBGRA32, colorWidth, colorHeight))
-                using (ArrayImage<ushort> transformedDepth = new ArrayImage<ushort>(ImageFormat.Depth16, colorWidth, colorHeight))
+                using (ManagedImage modifiedColor = new ManagedImage(ImageFormat.ColorBGRA32, colorWidth, colorHeight))
+                using (ManagedImage transformedDepth = new ManagedImage(ImageFormat.Depth16, colorWidth, colorHeight))
                 using (Transformation transform = device.GetCalibration().CreateTransformation())
                 {
                     while (true)
@@ -64,8 +66,8 @@ namespace K4aWpfTestApplication
                                 // Copy the color image
                                 capture.Color.CopyBytesTo(modifiedColor, 0, 0, (int)modifiedColor.Size);
 
-                                ushort[] depthBuffer = transformedDepth.Buffer;
-                                BGRA[] colorBuffer = modifiedColor.Buffer;
+                                Span<ushort> depthBuffer = MemoryMarshal.Cast<byte, ushort>(transformedDepth.Buffer);
+                                Span<BGRA> colorBuffer = MemoryMarshal.Cast<byte, BGRA>(modifiedColor.Buffer);
 
                                 // Modify the color image with data from the depth image
                                 for (int i = 0; i < colorBuffer.Length; i++)
