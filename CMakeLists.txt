@@ -93,6 +93,7 @@ add_subdirectory(tools)
 if (K4A_BUILD_DOCS)
     find_package(Doxygen 1.8.14 EXACT)
     if (DOXYGEN_FOUND)
+        set(DOXYGEN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/doxygen)
         set(DOXYGEN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/include/k4a ${CMAKE_CURRENT_SOURCE_DIR}/include/k4arecord ${DOXYGEN_MAINPAGE})
 
         # These variables are used in Doxyfile.in
@@ -102,14 +103,15 @@ if (K4A_BUILD_DOCS)
         configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
         add_custom_command(
-            OUTPUT ${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html
+            OUTPUT ${DOXYGEN_OUTPUT_DIRECTORY}/xml/index.xml
             COMMAND ${DOXYGEN_EXECUTABLE}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             MAIN_DEPENDENCY Doxyfile.in
             DEPENDS ${DOXYGEN_SOURCES}
             )
-    add_custom_target(k4adocs ALL DEPENDS ${DOXYGEN_OUTPUT_DIRECTORY}/html/index.html)
+        add_custom_target(k4adocs ALL DEPENDS ${DOXYGEN_OUTPUT_DIRECTORY}/xml/index.xml)
 
+        add_subdirectory(doxygen)
     endif()
 endif()
 
