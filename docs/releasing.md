@@ -86,113 +86,56 @@ this [GitHub repo](https://github.com/Microsoft/Azure-Kinect-Sensor-SDK).
 used to create a released build. Checkout the commit that matches the release label to build the desired release version.
 
 ## Artifact and Packaging
-### Windows MSI
-File | Source | Package(s)
----- | ------ | ----------
-LICENSE.txt | Microsoft Internal | MSI
-REDIST.txt | Microsoft Internal | MSI
-ThirdPartyNotices.txt | Microsoft Internal | MSI
-version.txt | Microsoft Internal | MSI
-sdk\include\k4a\k4a.h | GitHub Source | MSI
-sdk\include\k4a\k4a_export.h | GitHub Source | MSI
-sdk\include\k4a\k4atypes.h | GitHub Source | MSI
-sdk\include\k4a\k4aversion.h | GitHub Source | MSI
-sdk\include\k4arecord\k4arecord_export.h | GitHub Source | MSI
-sdk\include\k4arecord\playback.h | GitHub Source | MSI
-sdk\include\k4arecord\record.h | GitHub Source | MSI
-sdk\include\k4arecord\types.h | GitHub Source | MSI
-sdk\netstandard2.0\build\Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | MSI
-sdk\netstandard2.0\release\Microsoft.AzureKinect.deps.json | GitHub Build | MSI
-sdk\netstandard2.0\release\Microsoft.AzureKinect.dll | GitHub Build | MSI
-sdk\netstandard2.0\release\Microsoft.AzureKinect.pdb | GitHub Build | MSI
-sdk\netstandard2.0\release\Microsoft.AzureKinect.xml | GitHub Build | MSI
-sdk\windows-desktop\bin\amd64\release\depthengine_1_0.dll | Microsoft Internal | MSI
-sdk\windows-desktop\bin\amd64\release\k4a.dll | GitHub Build | MSI
-sdk\windows-desktop\bin\amd64\release\k4a.pdb | GitHub Build | MSI
-sdk\windows-desktop\bin\amd64\release\k4arecord.dll | GitHub Build | MSI
-sdk\windows-desktop\bin\amd64\release\k4arecord.pdb | GitHub Build | MSI
-sdk\windows-desktop\build\Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | MSI
-sdk\windows-desktop\lib\amd64\release\k4a.lib | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\k4arecord.lib | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4a\k4aConfig.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4a\k4aConfigVersion.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4a\k4aTargets-relwithdebinfo.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4a\k4aTargets.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4arecord\k4arecordConfig.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4arecord\k4arecordConfigVersion.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4arecord\k4arecordTargets-relwithdebinfo.cmake | GitHub Build | MSI
-sdk\windows-desktop\lib\amd64\release\cmake\k4arecord\k4arecordTargets.cmake | GitHub Build | MSI
-tools\AzureKinectFirmwareTool.exe | GitHub Build | MSI
-tools\AzureKinectFirmwareTool.pdb | GitHub Build | MSI
-tools\depthengine_1_0.dll | Microsoft Internal | MSI
-tools\k4a.dll | GitHub Build | MSI
-tools\k4a.pdb | GitHub Build | MSI
-tools\k4arecord.dll | GitHub Build | MSI
-tools\k4arecord.pdb | GitHub Build | MSI
-tools\k4arecorder.exe | GitHub Build | MSI
-tools\k4arecorder.pdb | GitHub Build | MSI
-tools\k4aviewer.exe | GitHub Build | MSI
-tools\k4aviewer.pdb | GitHub Build | MSI
-
-### Windows NuGet
-File | Source | Package(s)
----- | ------ | ----------
-LICENSE.txt | Microsoft Internal | NuGet
-REDIST.txt | Microsoft Internal | NuGet
-ThirdPartyNotices.txt | Microsoft Internal | NuGet
-version.txt | Microsoft Internal | NuGet
-build\native\Microsoft.Azure.Kinect.Sensor.targets | NuGet
-build\native\include\k4a\k4a.h | GitHub Source | NuGet
-build\native\include\k4a\k4atypes.h | GitHub Source | NuGet
-build\native\include\k4a\k4aversion.h | GitHub Source | NuGet
-build\native\include\k4a\k4a_export.h | GitHub Source | NuGet
-build\native\include\k4arecord\k4arecord_export.h | GitHub Source | NuGet
-build\native\include\k4arecord\playback.h | GitHub Source | NuGet
-build\native\include\k4arecord\record.h | GitHub Source | NuGet
-build\native\include\k4arecord\types.h | GitHub Source | NuGet
-build\netstandard2.0\Microsoft.Azure.Kinect.Sensor.targets | NuGet
-lib\native\amd64\release\depthengine_1_0.dll | Microsoft Internal | NuGet
-lib\native\amd64\release\k4a.dll | GitHub Build | NuGet
-lib\native\amd64\release\k4a.lib | GitHub Build | NuGet
-lib\native\amd64\release\k4a.pdb | GitHub Build | NuGet
-lib\native\amd64\release\k4arecord.dll | GitHub Build | NuGet
-lib\native\amd64\release\k4arecord.lib | GitHub Build | NuGet
-lib\native\amd64\release\k4arecord.pdb | GitHub Build | NuGet
-lib\netstandard2.0\release\Microsoft.AzureKinect.deps.json | GitHub Build | NuGet
-lib\netstandard2.0\release\Microsoft.AzureKinect.dll | GitHub Build | NuGet
-lib\netstandard2.0\release\Microsoft.AzureKinect.pdb | GitHub Build | NuGet
-lib\netstandard2.0\release\Microsoft.AzureKinect.xml | GitHub Build | NuGet
-
-### Ubuntu
-File | Source | Package(s)
----- | ------ | ----------
-\usr\bin\AzureKinectFirmwareTool | GitHub Build | libk4a-tools
-\usr\include\k4a\k4a.h | GitHub Source | libk4a-tools
-\usr\include\k4a\k4a.hpp | GitHub Source | libk4a-tools
-\usr\include\k4a\k4atypes.h | GitHub Source | libk4a-tools
-\usr\include\k4a\k4aversion.h | GitHub Source | libk4a-tools
-\usr\include\k4a\k4a_export.h | GitHub Source | libk4a-tools
-\usr\include\k4arecord\k4arecord_export.h | GitHub Source | libk4a-tools
-\usr\include\k4arecord\playback.h | GitHub Source | libk4a-tools
-\usr\include\k4arecord\record.h | GitHub Source | libk4a-tools
-\usr\include\k4arecord\types.h | GitHub Source | libk4a-tools
-\usr\lib\x86_64-linux-gnu\libdepthengine.so | Microsoft Internal | libk4a
-\usr\lib\x86_64-linux-gnu\libdepthengine.so.1.0 | Microsoft Internal | libk4a
-\usr\lib\x86_64-linux-gnu\libk4a.so | GitHub Build | libk4a
-\usr\lib\x86_64-linux-gnu\libk4a.so.1 | GitHub Build | libk4a
-\usr\lib\x86_64-linux-gnu\libk4a.so.1.1.0 | GitHub Build | libk4a
-\usr\lib\x86_64-linux-gnu\libk4arecord.so | GitHub Build | libk4a
-\usr\lib\x86_64-linux-gnu\libk4arecord.so.1 | GitHub Build | libk4a
-\usr\lib\x86_64-linux-gnu\libk4arecord.so.1.1.0 | GitHub Build | libk4a
-\usr\lib\x86_64-linux-gnu\cmake\k4a\k4aConfig.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4a\k4aConfigVersion.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4a\k4aTargets-relwithdebinfo.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4a\k4aTargets.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4arecord\k4arecordConfig.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4arecord\k4arecordConfigVersion.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4arecord\k4arecordTargets-relwithdebinfo.cmake | GitHub Build | libk4a-dev
-\usr\lib\x86_64-linux-gnu\cmake\k4arecord\k4arecordTargets.cmake | GitHub Build | libk4a-dev
-\usr\share\doc\libk4a1\LICENSE | Microsoft Internal | All
-\usr\share\doc\libk4a1\REDIST | Microsoft Internal | All
-\usr\share\doc\libk4a1\ThirdPartyNotices | Microsoft Internal | All
-\usr\share\doc\libk4a1\version | Microsoft Internal | All
+Description | File | Source | MSI | NuGet | libk4a | libk4a-dev | libk4a-tools
+----------- | ---- | ------ | --- | ----- | ------ | ---------- | ------------
+License | LICENSE.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
+Redistributable Files | REDIST.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
+3<sup>rd</sup> party notices | ThirdPartyNotices.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
+Version | version.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
+Azure Kinect header | k4a.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect header | k4a_export.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect header | k4atypes.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect header | k4aversion.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect C++ header | k4a.hpp | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect Record header | k4arecord_export.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect Record header | playback.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect Record header | record.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect Record header | types.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
+Azure Kinect SDK (Win x64 Release) | k4a.dll | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect SDK (Win x64 Release) | k4a.lib | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect SDK (Win x64 Release) | k4a.pdb | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect SDK (Linux x64 Release) | libk4a.so | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
+Azure Kinect SDK (Linux x64 Release) | libk4a.so.1 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
+Azure Kinect SDK (Linux x64 Release) | libk4a.so.1.1.0 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
+Azure Kinect SDK for C# | Microsoft.AzureKinect.deps.json | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect SDK for C# | Microsoft.AzureKinect.dll | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect SDK for C# | Microsoft.AzureKinect.pdb | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect SDK for C# | Microsoft.AzureKinect.xml | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect Record (Win x64 Release) | k4arecord.dll | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect Record (Win x64 Release) | k4arecord.lib | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect Record (Win x64 Release) | k4arecord.pdb | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
+Azure Kinect Record (Linux x64 Release) | libk4arecord.so | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
+Azure Kinect Record (Linux x64 Release) | libk4arecord.so.1 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
+Azure Kinect Record (Linux x64 Release) | libk4arecord.so.1.1.0 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
+Depth Engine (Win x64 Release) | depthengine_1_0.dll | Microsoft Internal | [X] | [X] | [ ] | [ ] | [ ]
+Depth Engine (Linux x64 Release) | libdepthengine.so | Microsoft Internal | [ ] | [ ] | [X] | [ ] | [ ]
+Depth Engine (Linux x64 Release) | libdepthengine.so.1.0 | Microsoft Internal | [ ] | [ ] | [X] | [ ] | [ ]
+MS Build target for Native C/C++ | Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | [X] | [X] | [ ] | [ ] | [ ]
+MS Build target for C# | Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | [X] | [X] | [ ] | [ ] | [ ]
+CMake for Azure Kinect (x64 Release) | k4aConfig.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect (x64 Release) | k4aConfigVersion.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect (x64 Release) | k4aTargets-relwithdebinfo.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect (x64 Release) | k4aTargets.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect Record (x64 Release) | k4arecordConfig.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect Record (x64 Release) | k4arecordConfigVersion.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect Record (x64 Release) | k4arecordTargets-relwithdebinfo.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+CMake for Azure Kinect Record (x64 Release) | k4arecordTargets.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
+Firmware Tool (Win x64 Release) | AzureKinectFirmwareTool.exe | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
+Firmware Tool (Win x64 Release) | AzureKinectFirmwareTool.pdb | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
+Firmware Tool (Linux x64 Release) | AzureKinectFirmwareTool | GitHub Build | [ ] | [ ] | [ ] | [ ] | [X]
+Azure Kinect Recorder (Win x64 Release) | k4arecorder.exe | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
+Azure Kinect Recorder (Win x64 Release) | k4arecorder.pdb | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
+Azure Kinect Recorder (Linux x64 Release) | k4arecorder | GitHub Build | [ ] | [ ] | [ ] | [ ] | [X]
+Azure Kinect Viewer (Win x64 Release) | k4aviewer.exe | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
+Azure Kinect Viewer (Win x64 Release) | k4aviewer.pdb | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
+Azure Kinect Viewer (Linux x64 Release) | k4aviewer | GitHub Build | [ ] | [ ] | [ ] | [ ] | [X]
