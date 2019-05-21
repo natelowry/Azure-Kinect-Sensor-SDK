@@ -140,4 +140,4 @@ windows-desktop/tools/x64/release/k4arecorder.pdb              | :white_check_ma
 windows-desktop/tools/x64/release/k4aviewer.exe                | :white_check_mark: |                    |                    |                    |
 windows-desktop/tools/x64/release/k4aviewer.pdb                | :white_check_mark: |                    |                    |                    |
 
-<sup>*</sup>These files are generated/included at packaging time Microsoft Internal sources.
+<sup>*</sup>These files are generated/included at packaging time from Microsoft Internal sources.
