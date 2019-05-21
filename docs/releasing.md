@@ -89,54 +89,53 @@ used to create a released build. Checkout the commit that matches the release la
  File              | Source             | MSI | NuGet | libk4a | libk4a-dev | libk4a-tools
 ------------------ | ------------------ | --- | ----- | ------ | ---------- | ------------
 LICENSE.txt        | Microsoft Internal | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
-REDIST.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
-ThirdPartyNotices.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
-version.txt | Microsoft Internal | [X] | [X] | [X] | [X] | [X]
-include/k4a.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/k4a_export.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/k4atypes.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/k4aversion.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/k4a.hpp | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/k4arecord_export.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/playback.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/record.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-include/types.h | GitHub Source | [X] | [X] | [ ] | [X] | [ ]
-windows-desktop/x64/release/k4a.dll | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-windows-desktop/x64/release/k4a.lib | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-windows-desktop/x64/release/k4a.pdb | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-linux-ubuntu/x64/release/libk4a.so | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
-linux-ubuntu/x64/release/libk4a.so.1 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
-linux-ubuntu/x64/release/libk4a.so.1.1.0 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
-dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.deps.json | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.dll | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.pdb | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.xml | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-windows-desktop/x64/release/k4arecord.dll | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-windows-desktop/x64/release/k4arecord.lib | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-windows-desktop/x64/release/k4arecord.pdb | GitHub Build | [X] | [X] | [ ] | [ ] | [ ]
-linux-ubuntu/x64/release/libk4arecord.so | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
-linux-ubuntu/x64/release/libk4arecord.so.1 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
-linux-ubuntu/x64/release/libk4arecord.so.1.1.0 | GitHub Build | [ ] | [ ] | [X] | [ ] | [ ]
-windows-desktop/x64/release/depthengine_1_0.dll | Microsoft Internal | [X] | [X] | [ ] | [ ] | [ ]
-linux-ubuntu/x64/release/libdepthengine.so | Microsoft Internal | [ ] | [ ] | [X] | [ ] | [ ]
-linux-ubuntu/x64/release/libdepthengine.so.1.0 | Microsoft Internal | [ ] | [ ] | [X] | [ ] | [ ]
-build/msbuild/native/Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | [X] | [X] | [ ] | [ ] | [ ]
-build/msbuild/dotnet/Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | [X] | [X] | [ ] | [ ] | [ ]
-build/cmake/x64/k4aConfig.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4aConfigVersion.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4aTargets-relwithdebinfo.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4aTargets.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4arecordConfig.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4arecordConfigVersion.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4arecordTargets-relwithdebinfo.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-build/cmake/x64/k4arecordTargets.cmake | GitHub Build | [X] | [X] | [ ] | [X] | [ ]
-windows-desktop/tools/x64/release/AzureKinectFirmwareTool.exe | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
-windows-desktop/tools/x64/release/AzureKinectFirmwareTool.pdb | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
-linux-ubuntu/tools/x64/release/AzureKinectFirmwareTool | GitHub Build | [ ] | [ ] | [ ] | [ ] | [X]
-windows-desktop/tools/x64/release/k4arecorder.exe | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
-windows-desktop/tools/x64/release/k4arecorder.pdb | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
-linux-ubuntu/tools/x64/release/k4arecorder | GitHub Build | [ ] | [ ] | [ ] | [ ] | [X]
-windows-desktop/tools/x64/release/k4aviewer.exe | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
-windows-desktop/tools/x64/release/k4aviewer.pdb | GitHub Build | [X] | [ ] | [ ] | [ ] | [ ]
-linux-ubuntu/tools/x64/release/k4aviewer | GitHub Build | [ ] | [ ] | [ ] | [ ] | [X]
-
+REDIST.txt | Microsoft Internal | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+ThirdPartyNotices.txt | Microsoft Internal | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+version.txt | Microsoft Internal | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+include/k4a.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/k4a_export.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/k4atypes.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/k4aversion.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/k4a.hpp | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/k4arecord_export.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/playback.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/record.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+include/types.h | GitHub Source | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+windows-desktop/x64/release/k4a.dll | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+windows-desktop/x64/release/k4a.lib | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+windows-desktop/x64/release/k4a.pdb | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+linux-ubuntu/x64/release/libk4a.so | GitHub Build |  |  | :white_check_mark: |  | 
+linux-ubuntu/x64/release/libk4a.so.1 | GitHub Build |  |  | :white_check_mark: |  | 
+linux-ubuntu/x64/release/libk4a.so.1.1.0 | GitHub Build |  |  | :white_check_mark: |  | 
+dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.deps.json | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.dll | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.pdb | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+dotnetstandard2/any-cpu/release/Microsoft.AzureKinect.xml | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+windows-desktop/x64/release/k4arecord.dll | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+windows-desktop/x64/release/k4arecord.lib | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+windows-desktop/x64/release/k4arecord.pdb | GitHub Build | :white_check_mark: | :white_check_mark: |  |  | 
+linux-ubuntu/x64/release/libk4arecord.so | GitHub Build |  |  | :white_check_mark: |  | 
+linux-ubuntu/x64/release/libk4arecord.so.1 | GitHub Build |  |  | :white_check_mark: |  | 
+linux-ubuntu/x64/release/libk4arecord.so.1.1.0 | GitHub Build |  |  | :white_check_mark: |  | 
+windows-desktop/x64/release/depthengine_1_0.dll | Microsoft Internal | :white_check_mark: | :white_check_mark: |  |  | 
+linux-ubuntu/x64/release/libdepthengine.so | Microsoft Internal |  |  | :white_check_mark: |  | 
+linux-ubuntu/x64/release/libdepthengine.so.1.0 | Microsoft Internal |  |  | :white_check_mark: |  | 
+build/msbuild/native/Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | :white_check_mark: | :white_check_mark: |  |  | 
+build/msbuild/dotnet/Microsoft.Azure.Kinect.Sensor.targets | Microsoft Internal | :white_check_mark: | :white_check_mark: |  |  | 
+build/cmake/x64/k4aConfig.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4aConfigVersion.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4aTargets-relwithdebinfo.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4aTargets.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4arecordConfig.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4arecordConfigVersion.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4arecordTargets-relwithdebinfo.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+build/cmake/x64/k4arecordTargets.cmake | GitHub Build | :white_check_mark: | :white_check_mark: |  | :white_check_mark: | 
+windows-desktop/tools/x64/release/AzureKinectFirmwareTool.exe | GitHub Build | :white_check_mark: |  |  |  | 
+windows-desktop/tools/x64/release/AzureKinectFirmwareTool.pdb | GitHub Build | :white_check_mark: |  |  |  | 
+linux-ubuntu/tools/x64/release/AzureKinectFirmwareTool | GitHub Build |  |  |  |  | :white_check_mark:
+windows-desktop/tools/x64/release/k4arecorder.exe | GitHub Build | :white_check_mark: |  |  |  | 
+windows-desktop/tools/x64/release/k4arecorder.pdb | GitHub Build | :white_check_mark: |  |  |  | 
+linux-ubuntu/tools/x64/release/k4arecorder | GitHub Build |  |  |  |  | :white_check_mark:
+windows-desktop/tools/x64/release/k4aviewer.exe | GitHub Build | :white_check_mark: |  |  |  | 
+windows-desktop/tools/x64/release/k4aviewer.pdb | GitHub Build | :white_check_mark: |  |  |  | 
+linux-ubuntu/tools/x64/release/k4aviewer | GitHub Build |  |  |  |  | :white_check_mark:
