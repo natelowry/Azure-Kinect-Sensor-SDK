@@ -93,7 +93,7 @@ REDIST.txt<sup>*</sup>                                         | :white_check_ma
 ThirdPartyNotices.txt<sup>*</sup>                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 version.txt<sup>*</sup>                                        | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 build/msbuild/native/Microsoft.Azure.Kinect.Sensor.targets<sup>*</sup> | :white_check_mark: | :white_check_mark: |            |                    |
-build/msbuild/dotnet/Microsoft.Azure.Kinect.Sensor.targets<sup>*</sup> | :white_check_mark: | :white_check_mark: |            |                    |
+build/msbuild/dotnet/Microsoft.Azure.Kinect.Sensor.targets<sup>*</sup> | :large_blue_diamond: | :large_blue_diamond: |            |                    |
 build/cmake/x64/k4aConfig.cmake                                | :white_check_mark: | :white_check_mark: |                    | :white_check_mark: |
 build/cmake/x64/k4aConfigVersion.cmake                         | :white_check_mark: | :white_check_mark: |                    | :white_check_mark: |
 build/cmake/x64/k4aTargets-relwithdebinfo.cmake                | :white_check_mark: | :white_check_mark: |                    | :white_check_mark: |
@@ -122,10 +122,10 @@ linux-ubuntu/x64/release/libk4arecord.so.1.1.0                 |                
 linux-ubuntu/tools/x64/release/AzureKinectFirmwareTool         |                    |                    |                    |                    | :white_check_mark:
 linux-ubuntu/tools/x64/release/k4arecorder                     |                    |                    |                    |                    | :white_check_mark:
 linux-ubuntu/tools/x64/release/k4aviewer                       |                    |                    |                    |                    | :white_check_mark:
-netstandard2.0/any-cpu/release/Microsoft.AzureKinect.deps.json | :white_check_mark: | :white_check_mark: |                    |                    |
-netstandard2.0/any-cpu/release/Microsoft.AzureKinect.dll       | :white_check_mark: | :white_check_mark: |                    |                    |
-netstandard2.0/any-cpu/release/Microsoft.AzureKinect.pdb       | :white_check_mark: | :white_check_mark: |                    |                    |
-netstandard2.0/any-cpu/release/Microsoft.AzureKinect.xml       | :white_check_mark: | :white_check_mark: |                    |                    |
+netstandard2.0/any-cpu/release/Microsoft.AzureKinect.deps.json | :large_blue_diamond: | :large_blue_diamond: |                    |                    |
+netstandard2.0/any-cpu/release/Microsoft.AzureKinect.dll       | :large_blue_diamond: | :large_blue_diamond: |                    |                    |
+netstandard2.0/any-cpu/release/Microsoft.AzureKinect.pdb       | :large_blue_diamond: | :large_blue_diamond: |                    |                    |
+netstandard2.0/any-cpu/release/Microsoft.AzureKinect.xml       | :large_blue_diamond: | :large_blue_diamond: |                    |                    |
 windows-desktop/x64/release/depthengine_1_0.dll<sup>*</sup>    | :white_check_mark: | :white_check_mark: |                    |                    |
 windows-desktop/x64/release/k4a.dll                            | :white_check_mark: | :white_check_mark: |                    |                    |
 windows-desktop/x64/release/k4a.lib                            | :white_check_mark: | :white_check_mark: |                    |                    |
@@ -140,4 +140,5 @@ windows-desktop/tools/x64/release/k4arecorder.pdb              | :white_check_ma
 windows-desktop/tools/x64/release/k4aviewer.exe                | :white_check_mark: |                    |                    |                    |
 windows-desktop/tools/x64/release/k4aviewer.pdb                | :white_check_mark: |                    |                    |                    |
 
-<sup>*</sup>These files are generated/included at packaging time from Microsoft Internal sources.
+* <sup>*</sup>These files are generated/included at packaging time from Microsoft Internal sources.
+* :large_blue_diamond: DotNet support planned for a future release (issue #136)
