@@ -18,7 +18,6 @@ sudo apt install -y \
     gcc-multilib \
     g++-multilib \
     python3 \
-    git-lfs \
     nasm \
     cmake
 
