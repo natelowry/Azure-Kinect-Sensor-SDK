@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "lib/usbcommand",
+  "lib/depth_mcu",
+  "bin/testapp"
+]

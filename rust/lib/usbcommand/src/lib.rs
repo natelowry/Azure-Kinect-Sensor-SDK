@@ -52,7 +52,7 @@ mod tests {
 
         let mut snbuffer : [u8; 128] = [0; 128];
         
-        let (transferred, result) = cmd.rx(0x00000115, Option::None, &mut snbuffer).unwrap();
+        let (transferred, result) = cmd.read(0x00000115, Option::None, &mut snbuffer).unwrap();
 
         let sn_from_cmd = String::from_utf8(snbuffer.to_vec()).unwrap();
         let sn_from_descriptor = cmd.serial_number();
