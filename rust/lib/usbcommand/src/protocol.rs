@@ -1,6 +1,13 @@
 #[derive(Debug)]
 pub struct UsbResult(pub u32);
 
+impl std::ops::Deref for UsbResult {
+    type Target = u32;
+
+    fn deref(&self) -> &<Self as std::ops::Deref>::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug)]
 pub struct EndpointIdentifier {
@@ -30,6 +37,8 @@ pub const COLOR_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
     stream_endpoint: 0x82
 };
 
+pub const REQUEST_PACKET_TYPE: u32 = 0x06022009;
+pub const RESPONSE_PACKET_TYPE: u32 = 0x0A6FE000;
 /// Header structure in USB commands
 #[repr(C, packed)]
 pub struct UsbcommandHeader {
@@ -67,7 +76,7 @@ impl UsbcommandPacket {
 
         UsbcommandPacket {
             header: UsbcommandHeader {
-                packet_type: 0x06022009,
+                packet_type: REQUEST_PACKET_TYPE,
                 packet_transaction_id: tx_id,
                 payload_size: data_size,
                 command: command,

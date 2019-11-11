@@ -159,13 +159,10 @@ impl<'a> Usbcommand {
             handle.set_active_configuration(1)?;
         }
 
-        match handle.kernel_driver_active(endpoint_identifier.interface) {
-            Ok(x) => {
-                if x == true {
-                    handle.detach_kernel_driver(endpoint_identifier.interface)?;
-                }
+        if let Ok(active) = handle.kernel_driver_active(endpoint_identifier.interface) {
+            if active == true {
+                handle.detach_kernel_driver(endpoint_identifier.interface)?;
             }
-            Err(_) => {}
         }
 
         handle.claim_interface(endpoint_identifier.interface)?;
@@ -245,7 +242,7 @@ impl<'a> Usbcommand {
         let response_tx_id = response.packet_transaction_id;
         let response_packet_type = response.packet_type;
         assert_eq!(response_tx_id, transaction_id);
-        assert_eq!(response_packet_type, 0x0A6FE000);
+        assert_eq!(response_packet_type, protocol::RESPONSE_PACKET_TYPE);
 
         Ok((transfer_size, response.status))
     }
@@ -288,7 +285,7 @@ impl<'a> Usbcommand {
         let response_tx_id = response.packet_transaction_id;
         let response_packet_type = response.packet_type;
         assert_eq!(response_tx_id, transaction_id);
-        assert_eq!(response_packet_type, 0x0A6FE000);
+        assert_eq!(response_packet_type, protocol::RESPONSE_PACKET_TYPE);
 
         Ok((transfer_size, response.status))
     }
