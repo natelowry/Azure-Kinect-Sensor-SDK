@@ -1,9 +1,20 @@
 #![allow(dead_code)]
-
 use rusb::UsbContext;
 
 use std::fmt::Debug;
-use std::fmt::Display;
+
+
+mod protocol;
+pub mod error;
+pub use error::*;
+
+pub use protocol::UsbResult;
+
+use protocol::{
+    EndpointIdentifier,
+    UsbcommandPacket,
+    UsbCommandResponse,
+};
 
 #[cfg(test)]
 mod tests {
@@ -50,8 +61,8 @@ mod tests {
     fn read_serial_number() {
         let mut cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
 
-        let mut snbuffer : [u8; 128] = [0; 128];
-        
+        let mut snbuffer: [u8; 128] = [0; 128];
+
         let (transferred, result) = cmd.read(0x00000115, Option::None, &mut snbuffer).unwrap();
 
         let sn_from_cmd = String::from_utf8(snbuffer.to_vec()).unwrap();
@@ -61,54 +72,6 @@ mod tests {
         println!("result: {:?}", result);
         println!("SN from command       : {}", sn_from_cmd);
         println!("SN from usb descriptor: {}", sn_from_descriptor);
-
-    }
-}
-
-#[derive(Debug)]
-enum AllocationSource {
-    User,
-    Depth,
-    Color,
-    IMU,
-    UsbDepth,
-    UsbIMU,
-}
-
-#[derive(Debug)]
-struct EndpointIdentifier {
-    vid: u16,
-    pid: u16,
-    interface: u8,
-    cmd_tx_endpoint: u8,
-    cmd_rx_endpoint: u8,
-    stream_endpoint: u8,
-    source: AllocationSource,
-}
-
-const DEPTH_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
-    vid: 0x045e,
-    pid: 0x097c,
-    interface: 0,
-    cmd_tx_endpoint: 0x02,
-    cmd_rx_endpoint: 0x81,
-    stream_endpoint: 0x83,
-    source: AllocationSource::UsbDepth,
-};
-
-const COLOR_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
-    vid: 0x045e,
-    pid: 0x097d,
-    interface: 2,
-    cmd_tx_endpoint: 0x04,
-    cmd_rx_endpoint: 0x83,
-    stream_endpoint: 0x82,
-    source: AllocationSource::UsbIMU,
-};
-
-impl std::fmt::Debug for Usbcommand {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "Usbcommand ({:?})", self.endpoint_identifier)
     }
 }
 
@@ -117,133 +80,20 @@ pub enum DeviceType {
     ColorImuProcessor,
 }
 
-#[derive(Debug)]
-pub struct UsbResult(u32);
 
-/// Header structure in USB commands
-#[repr(C, packed)]
-struct UsbcommandHeader {
-    packet_type: u32,
-    packet_transaction_id: u32,
-    payload_size: u32,
-    command: u32,
-    reserved: u32,
-}
-
-// A structure that packs the header and data in contiguous memory.
-#[repr(C, packed)]
-struct UsbcommandPacket {
-    header: UsbcommandHeader
-}
-
-impl UsbcommandPacket {
-    fn new<T>(command: u32, tx_id: u32, data: Option<T>) -> UsbcommandPacket {
-        let data_size = std::mem::size_of::<T>() as u32;
-
-        match data {
-                Option::Some(_x) => panic!("not expected"),
-                Option::None => [0; 0]
-            };
-
-        UsbcommandPacket {
-            header: UsbcommandHeader {
-                packet_type: 0x06022009,
-                packet_transaction_id: tx_id,
-                payload_size: data_size,
-                command: command,
-                reserved: 0,
-            }
-        }
-    }
-
-    fn as_slice(&self) -> &[u8] {
-
-        unsafe {
-            let buffer = (self as *const UsbcommandPacket) as *const u8;
-            let size = ::std::mem::size_of::<UsbcommandPacket>();
-
-            ::std::slice::from_raw_parts(
-                buffer,
-                size,
-            )
-        }
-    }
-}
-
-/// Response structure in USB commands
-#[repr(C, packed)]
-struct UsbCommandResponse {
-    packet_type: u32,
-    packet_transaction_id: u32,
-    status: UsbResult,
-    reserved: u32,
-}
-
-impl UsbCommandResponse {
-    fn new() -> Self {
-        UsbCommandResponse{
-            packet_type: 0,
-            packet_transaction_id: 0,
-            status: UsbResult(0),
-            reserved: 0,
-        }
-    }
-
-    fn as_mut_slice(&mut self) -> &mut [u8] {
-        unsafe {
-            ::std::slice::from_raw_parts_mut(
-                (self as *mut UsbCommandResponse) as *mut u8,
-                ::std::mem::size_of::<UsbCommandResponse>()
-            )
-        }
-    }
-}
-
-
-#[derive(Debug)]
-pub enum Error {
-    NoDevice,
-    Fail,
-    Access,
-}
-
-impl std::error::Error for Error {}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "A Usbcommand error occurred")
-    }
-}
-
-impl std::convert::From<rusb::Error> for Error {
-    fn from(t: rusb::Error) -> Self {
-        println!("Converted usb error: {}", t);
-        match t {
-            rusb::Error::Success => Error::Fail,
-            rusb::Error::Io => Error::Fail,
-            rusb::Error::InvalidParam => panic!("Unexpected usb error"),
-            rusb::Error::Access => Error::Access,
-            rusb::Error::NoDevice => Error::NoDevice,
-            rusb::Error::NotFound => Error::Fail,
-            rusb::Error::Busy => Error::Fail,
-            rusb::Error::Timeout => Error::Fail,
-            rusb::Error::Overflow => Error::Fail,
-            rusb::Error::Pipe => Error::Fail,
-            rusb::Error::Interrupted => panic!("Unexpected usb error: Interrupted"),
-            rusb::Error::NoMem => panic!("Unexpected usb error: NoMem"),
-            rusb::Error::NotSupported => panic!("Unexpected usb error: NotSupported"),
-            rusb::Error::Other => panic!("Unexpected usb error: Other"),
-        }
-    }
-}
-
-/// A command pipeline to an Azure Kinect USB device is represented here
+/// A command pipe to an Azure Kinect USB device is represented here
 pub struct Usbcommand {
     endpoint_identifier: EndpointIdentifier,
     device_handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: String,
     timeout_duration: std::time::Duration,
     transaction_id: u32,
+}
+
+impl std::fmt::Debug for Usbcommand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "Usbcommand ({:?})", self.endpoint_identifier)
+    }
 }
 
 impl<'a> Usbcommand {
@@ -256,14 +106,18 @@ impl<'a> Usbcommand {
     /// let mut _cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
     /// ```
     pub fn open(device_type: DeviceType, device_index: usize) -> Result<Usbcommand, Error> {
+
+        // Select the endpoint information for this device type
         let endpoint_identifier = match device_type {
-            DeviceType::DepthProcessor => DEPTH_ENDPOINT_IDENTIFIER,
-            DeviceType::ColorImuProcessor => COLOR_ENDPOINT_IDENTIFIER,
+            DeviceType::DepthProcessor => protocol::DEPTH_ENDPOINT_IDENTIFIER,
+            DeviceType::ColorImuProcessor => protocol::COLOR_ENDPOINT_IDENTIFIER,
         };
 
-        let my_local_libusb_context: Box<rusb::Context> = Box::new(rusb::Context::new().unwrap());
+        let context: Box<rusb::Context> = Box::new(rusb::Context::new().unwrap());
 
-        let device = my_local_libusb_context.devices()?.iter()
+        let device = context
+            .devices()?
+            .iter()
             .filter(|device| {
                 let device_desc = device.device_descriptor().unwrap();
 
@@ -294,7 +148,7 @@ impl<'a> Usbcommand {
             Option::Some(x) => x,
             Option::None => {
                 println!("Failed to find language");
-                return Err(Error::Fail)
+                return Err(Error::Fail);
             }
         };
 
@@ -305,8 +159,7 @@ impl<'a> Usbcommand {
             handle.set_active_configuration(1)?;
         }
 
-        match handle.kernel_driver_active(endpoint_identifier.interface)
-        {
+        match handle.kernel_driver_active(endpoint_identifier.interface) {
             Ok(x) => {
                 if x == true {
                     handle.detach_kernel_driver(endpoint_identifier.interface)?;
@@ -314,9 +167,8 @@ impl<'a> Usbcommand {
             }
             Err(_) => {}
         }
-        
-        handle.claim_interface(endpoint_identifier.interface)?;
 
+        handle.claim_interface(endpoint_identifier.interface)?;
 
         Ok(Self {
             endpoint_identifier: endpoint_identifier,
@@ -370,7 +222,7 @@ impl<'a> Usbcommand {
         // Send the command
         self.device_handle.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
-            packet.as_slice(),
+            packet.as_bytes(),
             self.timeout_duration,
         )?;
 
@@ -386,7 +238,7 @@ impl<'a> Usbcommand {
         // Get the response status
         self.device_handle.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
-            response.as_mut_slice(),
+            response.as_mut_bytes(),
             self.timeout_duration,
         )?;
 
@@ -394,7 +246,7 @@ impl<'a> Usbcommand {
         let response_packet_type = response.packet_type;
         assert_eq!(response_tx_id, transaction_id);
         assert_eq!(response_packet_type, 0x0A6FE000);
-        
+
         Ok((transfer_size, response.status))
     }
 
@@ -413,7 +265,7 @@ impl<'a> Usbcommand {
         // Send the command
         self.device_handle.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
-            packet.as_slice(),
+            packet.as_bytes(),
             self.timeout_duration,
         )?;
 
@@ -429,7 +281,7 @@ impl<'a> Usbcommand {
         // Get the response status
         self.device_handle.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
-            response.as_mut_slice(),
+            response.as_mut_bytes(),
             self.timeout_duration,
         )?;
 
@@ -437,7 +289,7 @@ impl<'a> Usbcommand {
         let response_packet_type = response.packet_type;
         assert_eq!(response_tx_id, transaction_id);
         assert_eq!(response_packet_type, 0x0A6FE000);
-        
+
         Ok((transfer_size, response.status))
     }
 }
