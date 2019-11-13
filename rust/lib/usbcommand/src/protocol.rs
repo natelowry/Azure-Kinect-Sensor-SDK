@@ -1,14 +1,6 @@
 #[derive(Debug)]
 pub struct UsbResult(pub u32);
 
-impl std::ops::Deref for UsbResult {
-    type Target = u32;
-
-    fn deref(&self) -> &<Self as std::ops::Deref>::Target {
-        &self.0
-    }
-}
-
 #[derive(Debug)]
 pub struct EndpointIdentifier {
     pub vid: u16,
@@ -16,7 +8,7 @@ pub struct EndpointIdentifier {
     pub interface: u8,
     pub cmd_tx_endpoint: u8,
     pub cmd_rx_endpoint: u8,
-    pub stream_endpoint: u8
+    pub stream_endpoint: u8,
 }
 
 pub const DEPTH_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
@@ -25,7 +17,7 @@ pub const DEPTH_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
     interface: 0,
     cmd_tx_endpoint: 0x02,
     cmd_rx_endpoint: 0x81,
-    stream_endpoint: 0x83
+    stream_endpoint: 0x83,
 };
 
 pub const COLOR_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
@@ -34,7 +26,7 @@ pub const COLOR_ENDPOINT_IDENTIFIER: EndpointIdentifier = EndpointIdentifier {
     interface: 2,
     cmd_tx_endpoint: 0x04,
     cmd_rx_endpoint: 0x83,
-    stream_endpoint: 0x82
+    stream_endpoint: 0x82,
 };
 
 pub const REQUEST_PACKET_TYPE: u32 = 0x06022009;
@@ -55,8 +47,6 @@ pub struct UsbcommandPacket {
     header: UsbcommandHeader,
     data: [u8; 128],
 }
-
-
 
 impl UsbcommandPacket {
     pub fn new(command: u32, tx_id: u32, data: Option<&[u8]>) -> UsbcommandPacket {
@@ -96,7 +86,6 @@ impl UsbcommandPacket {
         }
     }
 }
-
 
 /// Response structure in USB commands
 #[repr(C, packed)]

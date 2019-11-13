@@ -1,5 +1,3 @@
-
-
 /// Rounds a value up to an increment of size
 ///
 /// # Example
@@ -40,7 +38,7 @@ impl SensorMode {
             SensorMode::PseudoCommon => payload_size!(1678024),
             SensorMode::LongThrowNative => payload_size!(5310760),
             SensorMode::MegaPixel => payload_size!(9438664),
-            SensorMode::QuarterMegaPixel => payload_size!(3777232)
+            SensorMode::QuarterMegaPixel => payload_size!(3777232),
         }
     }
 }
@@ -87,7 +85,7 @@ impl DeviceCommands {
             DeviceCommands::DepthReadProductSN => 0x00000115,
             DeviceCommands::ComponentVersionGet => 0x00000201,
             DeviceCommands::DownloadFirmware(_) => 0x00000202,
-            DeviceCommands::GetFirmwareUpdateStatus => 0x00000203
+            DeviceCommands::GetFirmwareUpdateStatus => 0x00000203,
         }
     }
 }
@@ -116,17 +114,17 @@ impl FirmwareVersions {
             rgb: Version {
                 major: 0,
                 minor: 0,
-                build: 0
+                build: 0,
             },
             depth: Version {
                 major: 0,
                 minor: 0,
-                build: 0
+                build: 0,
             },
             audio: Version {
                 major: 0,
                 minor: 0,
-                build: 0
+                build: 0,
             },
             depth_sensor_cfg_major: 0,
             depth_sensor_cfg_minor: 0,

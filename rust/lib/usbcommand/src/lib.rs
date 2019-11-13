@@ -3,18 +3,13 @@ use rusb::UsbContext;
 
 use std::fmt::Debug;
 
-
-mod protocol;
 pub mod error;
+mod protocol;
 pub use error::*;
 
 pub use protocol::UsbResult;
 
-use protocol::{
-    EndpointIdentifier,
-    UsbcommandPacket,
-    UsbCommandResponse,
-};
+use protocol::{EndpointIdentifier, UsbCommandResponse, UsbcommandPacket};
 
 #[cfg(test)]
 mod tests {
@@ -80,7 +75,6 @@ pub enum DeviceType {
     ColorImuProcessor,
 }
 
-
 /// A command pipe to an Azure Kinect USB device is represented here
 pub struct Usbcommand {
     endpoint_identifier: EndpointIdentifier,
@@ -106,7 +100,6 @@ impl<'a> Usbcommand {
     /// let mut _cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
     /// ```
     pub fn open(device_type: DeviceType, device_index: usize) -> Result<Usbcommand, Error> {
-
         // Select the endpoint information for this device type
         let endpoint_identifier = match device_type {
             DeviceType::DepthProcessor => protocol::DEPTH_ENDPOINT_IDENTIFIER,

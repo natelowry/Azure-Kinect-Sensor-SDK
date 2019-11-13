@@ -28,7 +28,7 @@ impl DepthMcu {
             .unwrap();
 
         if result.0 != 0 {
-            return Err(usbcommand::Error::Fail)
+            return Err(usbcommand::Error::Fail);
         }
 
         let slice = &snbuffer[0..transferred];
@@ -40,7 +40,7 @@ impl DepthMcu {
         let mut retries = 20;
         while retries > 0 {
             let result = self.version();
-            
+
             if result.is_ok() {
                 return Ok(());
             }
@@ -57,9 +57,9 @@ impl DepthMcu {
         let command = protocol::DeviceCommands::ComponentVersionGet;
         let buffer = fwversions.as_mut_bytes();
 
-        let (transferred, result) = self
-            .device
-            .read(command.command_code(), Option::None, buffer)?;
+        let (transferred, result) =
+            self.device
+                .read(command.command_code(), Option::None, buffer)?;
 
         if result.0 == 0 && transferred == buffer.len() {
             return Ok(fwversions);
