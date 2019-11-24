@@ -41,6 +41,33 @@ impl SensorMode {
             SensorMode::QuarterMegaPixel => payload_size!(3777232),
         }
     }
+
+    pub fn as_bytes(&self) -> [u8; 4] {
+        match self {
+            SensorMode::PseudoCommon => [0, 0, 0, 3],
+            SensorMode::LongThrowNative => [0, 0, 0, 4],
+            SensorMode::MegaPixel => [0, 0, 0, 5],
+            SensorMode::QuarterMegaPixel => [0, 0, 0, 7],
+        }
+    }
+}
+
+pub const CALIBRATION_DATA_SIZE : u32 = 2000000;
+
+pub enum FPS {
+    Fps5,
+    Fps15,
+    Fps30,
+}
+
+impl FPS {
+    pub fn as_bytes(&self) -> [u8; 4] {
+        match self {
+            FPS::Fps5 => [0, 0, 0, 5],
+            FPS::Fps15 => [0, 0, 0, 15],
+            FPS::Fps30 => [0, 0, 0, 30],
+        }
+    }
 }
 
 pub struct PackageInfo {
@@ -53,17 +80,17 @@ pub enum DeviceCommands {
     VersionGet,
     DepthStart,
     DepthStop,
-    NVDataGet(u32),
-    DepthModeSet(u32),
+    NVDataGet,
+    DepthModeSet,
     DepthPowerOff,
     DepthPowerOn,
     DepthStreamStart,
     DepthStreamStop,
-    DepthFPSSet(u32),
+    DepthFPSSet,
     DepthReadCalibrationData,
     DepthReadProductSN,
     ComponentVersionGet,
-    DownloadFirmware(PackageInfo),
+    DownloadFirmware,
     GetFirmwareUpdateStatus,
 }
 
@@ -74,18 +101,32 @@ impl DeviceCommands {
             DeviceCommands::VersionGet => 0x00000002,
             DeviceCommands::DepthStart => 0x00000009,
             DeviceCommands::DepthStop => 0x0000000A,
-            DeviceCommands::NVDataGet(_) => 0x00000022,
-            DeviceCommands::DepthModeSet(_) => 0x000000E1,
+            DeviceCommands::NVDataGet => 0x00000022,
+            DeviceCommands::DepthModeSet => 0x000000E1,
             DeviceCommands::DepthPowerOff => 0x000000EF,
             DeviceCommands::DepthPowerOn => 0x000000F0,
             DeviceCommands::DepthStreamStart => 0x000000F1,
             DeviceCommands::DepthStreamStop => 0x000000F2,
-            DeviceCommands::DepthFPSSet(_) => 0x00000103,
+            DeviceCommands::DepthFPSSet => 0x00000103,
             DeviceCommands::DepthReadCalibrationData => 0x00000111,
             DeviceCommands::DepthReadProductSN => 0x00000115,
             DeviceCommands::ComponentVersionGet => 0x00000201,
-            DeviceCommands::DownloadFirmware(_) => 0x00000202,
+            DeviceCommands::DownloadFirmware => 0x00000202,
             DeviceCommands::GetFirmwareUpdateStatus => 0x00000203,
+        }
+    }
+}
+
+pub enum NvTag {
+    NoData,
+    IRSensorCalibration,
+}
+
+impl NvTag {
+    pub fn as_bytes(&self) -> [u8;4] {
+        match self {
+            NvTag::NoData => [0, 0, 0, 0],
+            NvTag::IRSensorCalibration => [0, 0, 0, 2]
         }
     }
 }

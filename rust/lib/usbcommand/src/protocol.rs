@@ -1,6 +1,14 @@
 #[derive(Debug)]
 pub struct UsbResult(pub u32);
 
+pub const USB_RESULT_OK : UsbResult = UsbResult(0);
+
+impl PartialEq for UsbResult {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
 #[derive(Debug)]
 pub struct EndpointIdentifier {
     pub vid: u16,

@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 use rusb::UsbContext;
 
 use std::fmt::Debug;
@@ -58,13 +59,12 @@ mod tests {
 
         let mut snbuffer: [u8; 128] = [0; 128];
 
-        let (transferred, result) = cmd.read(0x00000115, Option::None, &mut snbuffer).unwrap();
+        let transferred = cmd.read(0x00000115, Option::None, &mut snbuffer).unwrap();
 
         let sn_from_cmd = String::from_utf8(snbuffer.to_vec()).unwrap();
         let sn_from_descriptor = cmd.serial_number();
 
         println!("transferred: {}", transferred);
-        println!("result: {:?}", result);
         println!("SN from command       : {}", sn_from_cmd);
         println!("SN from usb descriptor: {}", sn_from_descriptor);
     }
@@ -125,7 +125,7 @@ impl<'a> Usbcommand {
             Option::Some(x) => x,
             Option::None => {
                 println!("Failed to find device");
-                return Err(Error::Fail);
+                return Err(Error::NoDevice);
             }
         };
 
@@ -141,7 +141,7 @@ impl<'a> Usbcommand {
             Option::Some(x) => x,
             Option::None => {
                 println!("Failed to find language");
-                return Err(Error::Fail);
+                panic!("Device does not have language descriptor");
             }
         };
 
@@ -202,7 +202,7 @@ impl<'a> Usbcommand {
         cmd_code: u32,
         cmd_data: Option<&[u8]>,
         rx_data: &mut [u8],
-    ) -> Result<(usize, UsbResult), Error> {
+    ) -> Result<usize, Error> {
         let transaction_id = self.transaction_id;
         self.transaction_id = transaction_id + 1;
 
@@ -234,10 +234,25 @@ impl<'a> Usbcommand {
 
         let response_tx_id = response.packet_transaction_id;
         let response_packet_type = response.packet_type;
-        assert_eq!(response_tx_id, transaction_id);
-        assert_eq!(response_packet_type, protocol::RESPONSE_PACKET_TYPE);
 
-        Ok((transfer_size, response.status))
+        if response_tx_id != transaction_id {
+            return Err(Error::Protocol(ProtocolError::TransactionIdMismatch(Mismatch::new(
+                transaction_id,
+                response_tx_id))));
+        }
+
+        if response_packet_type != protocol::RESPONSE_PACKET_TYPE {
+            return Err(Error::Protocol(ProtocolError::PacketTypeMismatch(Mismatch::new(
+                protocol::RESPONSE_PACKET_TYPE, response_packet_type))));
+        }
+
+        let status = response.status;
+        if status != protocol::USB_RESULT_OK {
+            let err = Error::Firmware(status);
+            return Err(err);
+        }
+
+        Ok(transfer_size)
     }
 
     pub fn write(
@@ -245,7 +260,7 @@ impl<'a> Usbcommand {
         cmd_code: u32,
         cmd_data: Option<&[u8]>,
         tx_data: &[u8],
-    ) -> Result<(usize, UsbResult), Error> {
+    ) -> Result<usize, Error> {
         let transaction_id = self.transaction_id;
         self.transaction_id = transaction_id + 1;
 
@@ -277,9 +292,24 @@ impl<'a> Usbcommand {
 
         let response_tx_id = response.packet_transaction_id;
         let response_packet_type = response.packet_type;
-        assert_eq!(response_tx_id, transaction_id);
-        assert_eq!(response_packet_type, protocol::RESPONSE_PACKET_TYPE);
+        
+        if response_tx_id != transaction_id {
+            return Err(Error::Protocol(ProtocolError::TransactionIdMismatch(Mismatch::new(
+                transaction_id,
+                response_tx_id))));
+        }
 
-        Ok((transfer_size, response.status))
+        if response_packet_type != protocol::RESPONSE_PACKET_TYPE {
+            return Err(Error::Protocol(ProtocolError::PacketTypeMismatch(Mismatch::new(
+                protocol::RESPONSE_PACKET_TYPE, response_packet_type))));
+        }
+
+        let status = response.status;
+        if status != protocol::USB_RESULT_OK {
+            let err = Error::Firmware(status);
+            return Err(err);
+        }
+
+        Ok(transfer_size)
     }
 }
