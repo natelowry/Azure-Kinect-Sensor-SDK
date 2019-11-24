@@ -11,6 +11,7 @@ pub use error::*;
 pub use protocol::UsbResult;
 
 use protocol::{EndpointIdentifier, UsbCommandResponse, UsbcommandPacket};
+use std::sync::{Arc, Mutex};
 
 #[cfg(test)]
 mod tests {
@@ -78,10 +79,12 @@ pub enum DeviceType {
 /// A command pipe to an Azure Kinect USB device is represented here
 pub struct Usbcommand {
     endpoint_identifier: EndpointIdentifier,
-    device_handle: rusb::DeviceHandle<rusb::Context>,
+    device_handle: Arc<Mutex<rusb::DeviceHandle<rusb::Context>>>,
     serial_number: String,
     timeout_duration: std::time::Duration,
     transaction_id: u32,
+    streaming_thread: Option<(std::sync::mpsc::Sender<()>, std::thread::JoinHandle<()>)>,
+
 }
 
 impl std::fmt::Debug for Usbcommand {
@@ -162,10 +165,11 @@ impl<'a> Usbcommand {
 
         Ok(Self {
             endpoint_identifier: endpoint_identifier,
-            device_handle: handle,
+            device_handle: Arc::new(Mutex::new(handle)),
             serial_number: serial_number,
             timeout_duration: timeout,
             transaction_id: 0,
+            streaming_thread: Option::None,
         })
     }
 
@@ -209,15 +213,17 @@ impl<'a> Usbcommand {
         // Construct the command packet (containing a header and the cmd_data in a contiguous block)
         let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data);
 
+        let device = self.device_handle.lock().unwrap();
+
         // Send the command
-        self.device_handle.write_bulk(
+        device.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
             packet.as_bytes(),
             self.timeout_duration,
         )?;
 
         // Read the payload
-        let transfer_size = self.device_handle.read_bulk(
+        let transfer_size = device.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
             rx_data,
             self.timeout_duration,
@@ -228,7 +234,7 @@ impl<'a> Usbcommand {
         let mut response = UsbCommandResponse::new();
 
         // Get the response status
-        let response_size = self.device_handle.read_bulk(
+        let response_size = device.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
             response.as_mut_bytes(),
             self.timeout_duration,
@@ -276,15 +282,17 @@ impl<'a> Usbcommand {
         // Construct the command packet (containing a header and the cmd_data in a contiguous block)
         let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data);
 
+        let device = self.device_handle.lock().unwrap();
+
         // Send the command
-        self.device_handle.write_bulk(
+        device.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
             packet.as_bytes(),
             self.timeout_duration,
         )?;
 
         // Write the payload
-        let transfer_size = self.device_handle.write_bulk(
+        let transfer_size = device.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
             tx_data,
             self.timeout_duration,
@@ -295,7 +303,7 @@ impl<'a> Usbcommand {
         let mut response = UsbCommandResponse::new();
 
         // Get the response status
-        let response_size = self.device_handle.read_bulk(
+        let response_size = device.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
             response.as_mut_bytes(),
             self.timeout_duration,
@@ -331,22 +339,50 @@ impl<'a> Usbcommand {
         Ok(transfer_size)
     }
 
-/*
-    pub fn stream_start(&mut self, payload_size : usize) -> Result<(), Error> {
-        
+    pub fn stream_start(&mut self, payload_size: usize) -> Result<(), Error> {
         let timeout = self.timeout_duration;
         let endpoint = self.endpoint_identifier.stream_endpoint;
 
-        let handle = self.device_handle;
+        let handle = self.device_handle.clone();
 
-        std::thread::spawn(move || {
+        let (tx, rx) = std::sync::mpsc::channel::<()>();
 
-            let mut buffer = [0; 1000];
-            handle.read_bulk(
-                endpoint, &mut buffer, timeout);
+        let join_handle = std::thread::spawn(move || {
+            let mut buffer = vec![0; payload_size];
+
+            loop {
+                if rx.try_recv().is_ok() {
+                    println!("Ended thread");
+                    return ();
+                }
+
+                {
+                    let device = handle.lock().unwrap();
+                    println!("Reading from stream");
+                    match device.read_bulk(endpoint, &mut buffer, timeout) {
+                        Result::Ok(x) => println!("Data! {}", x),
+                        Result::Err(e) => println!("Error! {}", e),
+                    }
+                }
+            }
         });
+
+        self.streaming_thread = Option::Some((tx, join_handle));
 
         Ok(())
     }
-    */
+
+    pub fn stream_stop(&mut self) -> Result<(), Error> {
+        
+        if let Some((tx, join_handle)) = self.streaming_thread.take() {
+            
+            // Signal the thread to exit
+            tx.send(()).unwrap();
+
+            // Wait for it to complete
+            join_handle.join().unwrap();
+        }
+
+        Ok(())
+    }
 }

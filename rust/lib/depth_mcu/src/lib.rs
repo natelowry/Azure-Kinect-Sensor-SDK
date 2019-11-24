@@ -44,6 +44,7 @@ pub struct StreamingDepthMcu {
     mode: protocol::SensorMode,
 }
 
+
 impl DepthMcu {
     pub fn new(device: usbcommand::Usbcommand) -> Self {
         Self { device: device }
@@ -64,7 +65,8 @@ impl DepthMcu {
         let sensor_mode = mode.sensor_mode();
         let command_argument = sensor_mode.as_bytes();
 
-        self.device.write(command.command_code(), Option::Some(&command_argument), &[])?;
+        self.device
+            .write(command.command_code(), Option::Some(&command_argument), &[])?;
 
         Ok(PoweredDepthMcu {
             device: self.device,
@@ -74,7 +76,6 @@ impl DepthMcu {
 }
 
 impl PoweredDepthMcu {
-
     /// Gets the sensor calibration from the device
     ///
     /// This operation can only be performed on a depth device that has been powered on.
@@ -104,7 +105,6 @@ impl PoweredDepthMcu {
         mut self,
         fps: protocol::FPS,
     ) -> Result<StreamingDepthMcu, usbcommand::Error> {
-
         self.device().write(
             protocol::DeviceCommands::DepthFPSSet.command_code(),
             Option::Some(&fps.as_bytes()),
@@ -123,31 +123,42 @@ impl PoweredDepthMcu {
             &[],
         )?;
 
+        
+        let payload_size = self.mode.payload_size().padded_size;
+
+        self.device.stream_start(payload_size)?;
+
         Ok(StreamingDepthMcu {
-            device: self.device,
-            mode: self.mode
-        })
+                device: self.device,
+                mode: self.mode,
+        }
+            )
     }
 }
 
 impl StreamingDepthMcu {
-    pub fn stop_streaming(
-        mut self
-    ) -> Result<PoweredDepthMcu, usbcommand::Error> {
-        self.device().write(
+
+    pub fn stop_streaming(mut self) -> Result<PoweredDepthMcu, usbcommand::Error> {
+
+        self.device.stream_stop()?;
+    
+        self.device.write(
             protocol::DeviceCommands::DepthStreamStop.command_code(),
             Option::None,
-            &[])?;
+            &[],
+        )?;
 
-        self.device().write(
+        self.device.write(
             protocol::DeviceCommands::DepthStop.command_code(),
             Option::None,
-            &[])?;
-        
-        Ok(PoweredDepthMcu {
+            &[],
+        )?;
+
+        return Ok(PoweredDepthMcu {
             device: self.device,
-            mode: self.mode
-        })
+            mode: self.mode,
+        });
+        
     }
 }
 
@@ -184,7 +195,7 @@ pub trait DepthMcuCommonOperations {
 
         let slice = &snbuffer[0..transferred];
         let vec = slice.to_vec();
-        
+
         Ok(String::from_utf8(vec)?)
     }
 
@@ -218,9 +229,7 @@ pub trait DepthMcuCommonOperations {
         return Ok(fwversions);
     }
 
-
     fn extrinsic_calibration(&mut self) -> Result<String, usbcommand::Error> {
-        
         // Over allocate a full megabyte
         let mut cal_buffer = vec![0; 1024 * 1024];
 
@@ -237,5 +246,4 @@ pub trait DepthMcuCommonOperations {
         // Convert the results to a String
         Ok(String::from_utf8(cal_buffer)?)
     }
-    
 }
