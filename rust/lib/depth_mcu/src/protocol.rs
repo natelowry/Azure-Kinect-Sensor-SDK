@@ -44,15 +44,15 @@ impl SensorMode {
 
     pub fn as_bytes(&self) -> [u8; 4] {
         match self {
-            SensorMode::PseudoCommon => [0, 0, 0, 3],
-            SensorMode::LongThrowNative => [0, 0, 0, 4],
-            SensorMode::MegaPixel => [0, 0, 0, 5],
-            SensorMode::QuarterMegaPixel => [0, 0, 0, 7],
+            SensorMode::PseudoCommon => 3u32.to_le_bytes(),
+            SensorMode::LongThrowNative => 4u32.to_le_bytes(),
+            SensorMode::MegaPixel => 5u32.to_le_bytes(),
+            SensorMode::QuarterMegaPixel => 7u32.to_le_bytes(),
         }
     }
 }
 
-pub const CALIBRATION_DATA_SIZE : u32 = 2000000;
+pub const CALIBRATION_DATA_SIZE: u32 = 2000000;
 
 pub enum FPS {
     Fps5,
@@ -63,9 +63,9 @@ pub enum FPS {
 impl FPS {
     pub fn as_bytes(&self) -> [u8; 4] {
         match self {
-            FPS::Fps5 => [0, 0, 0, 5],
-            FPS::Fps15 => [0, 0, 0, 15],
-            FPS::Fps30 => [0, 0, 0, 30],
+            FPS::Fps5 => 5u32.to_le_bytes(),
+            FPS::Fps15 => 15u32.to_le_bytes(),
+            FPS::Fps30 => 30u32.to_le_bytes(),
         }
     }
 }
@@ -123,10 +123,10 @@ pub enum NvTag {
 }
 
 impl NvTag {
-    pub fn as_bytes(&self) -> [u8;4] {
+    pub fn as_bytes(&self) -> [u8; 4] {
         match self {
-            NvTag::NoData => [0, 0, 0, 0],
-            NvTag::IRSensorCalibration => [0, 0, 0, 2]
+            NvTag::NoData => 0u32.to_le_bytes(),
+            NvTag::IRSensorCalibration => 2u32.to_le_bytes(),
         }
     }
 }

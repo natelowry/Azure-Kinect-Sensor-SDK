@@ -1,11 +1,37 @@
-#[derive(Debug)]
 pub struct UsbResult(pub u32);
 
-pub const USB_RESULT_OK : UsbResult = UsbResult(0);
+pub const USB_RESULT_OK: UsbResult = UsbResult(0);
 
 impl PartialEq for UsbResult {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
+    }
+}
+
+impl std::fmt::Debug for UsbResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            0x00000000 => write!(f, "UsbResult(DEV_CMD_STATUS_SUCCESS)"),
+            0x00000001 => write!(f, "UsbResult(DEV_CMD_STATUS_ERROR)"),
+            0x00000003 => write!(f, "UsbResult(DEV_CMD_STATUS_INVALID_PARAMETER)"),
+            0x00000007 => write!(f, "UsbResult(DEV_CMD_STATUS_COMMAND_BUSY)"),
+            0x00000008 => write!(f, "UsbResult(DEV_CMD_STATUS_NOT_IMPLEMENTED)"),
+            0x00000009 => write!(f, "UsbResult(DEV_CMD_STATUS_OUT_OF_MEMORY)"),
+            0x0000000D => write!(f, "UsbResult(DEV_CMD_STATUS_PARAM_BAD_TAG)"),
+            0x00000012 => write!(f, "UsbResult(DEV_CMD_STATUS_INVALID_PAYLOAD_SIZE)"),
+            0x00000063 => write!(f, "UsbResult(DEV_CMD_STATUS_FAILED)"),
+            0x00000101 => write!(f, "UsbResult(DEV_CMD_STATUS_WRONG_COMMAND_STATE)"),
+            0x00000102 => write!(f, "UsbResult(DEV_CMD_STATUS_WRONG_DEVICE_STATE)"),
+            0x00000480 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_INVALID_CHANNEL)"),
+            0x00000481 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_INCORRECT_CHANNEL)"),
+            0x00000482 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_TIMEOUT)"),
+            0x00000483 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_UNKNOWN_DEVICE)"),
+            0x00000484 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_UNSUPPORTED_DEVICE)"),
+            0x00000485 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_UNSUPPORTED_SIGNAL)"),
+            0x00000486 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_INVALID_INPUT)"),
+            0x00000487 => write!(f, "UsbResult(DEV_CMD_STATUS_ADC_DATA_NOT_AVAILABLE)"),
+            x => write!(f, "UsbResult({})", x),
+        }
     }
 }
 

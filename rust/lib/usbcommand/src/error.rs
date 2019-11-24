@@ -4,22 +4,24 @@ use std::fmt::Display;
 #[derive(Debug)]
 pub struct Mismatch<T> {
     expected: T,
-    actual: T
+    actual: T,
 }
 
 impl<T> Mismatch<T> {
     pub fn new(expected: T, actual: T) -> Self {
         Self {
             expected: expected,
-            actual: actual
+            actual: actual,
         }
     }
 }
 
 #[derive(Debug)]
 pub enum ProtocolError {
+    ResponseSizeMismatch(Mismatch<usize>),
     TransactionIdMismatch(Mismatch<u32>),
     PacketTypeMismatch(Mismatch<u32>),
+    InvalidString,
 }
 
 #[derive(Debug)]
@@ -29,7 +31,7 @@ pub enum Error {
     Firmware(UsbResult),
     Access,
     Timeout,
-    Protocol(ProtocolError)
+    Protocol(ProtocolError),
 }
 
 impl std::error::Error for Error {}
@@ -49,5 +51,11 @@ impl std::convert::From<rusb::Error> for Error {
             rusb::Error::NoDevice => Error::NoDevice,
             _ => Error::Transport(t),
         }
+    }
+}
+
+impl std::convert::From<std::string::FromUtf8Error> for Error {
+    fn from(_: std::string::FromUtf8Error) -> Self {
+        Error::Protocol(ProtocolError::InvalidString)
     }
 }

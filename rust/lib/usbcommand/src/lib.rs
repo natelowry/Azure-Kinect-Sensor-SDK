@@ -129,7 +129,7 @@ impl<'a> Usbcommand {
             }
         };
 
-        let timeout = std::time::Duration::new(5, 0);
+        let timeout = std::time::Duration::new(10, 0);
         let mut handle = device.open()?;
 
         let serial_number_string_index = device
@@ -223,10 +223,12 @@ impl<'a> Usbcommand {
             self.timeout_duration,
         )?;
 
+        assert!(transfer_size <= rx_data.len());
+
         let mut response = UsbCommandResponse::new();
 
         // Get the response status
-        self.device_handle.read_bulk(
+        let response_size = self.device_handle.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
             response.as_mut_bytes(),
             self.timeout_duration,
@@ -235,15 +237,22 @@ impl<'a> Usbcommand {
         let response_tx_id = response.packet_transaction_id;
         let response_packet_type = response.packet_type;
 
+        if response_size != response.as_mut_bytes().len() {
+            return Err(Error::Protocol(ProtocolError::ResponseSizeMismatch(
+                Mismatch::new(response.as_mut_bytes().len(), response_size),
+            )));
+        }
+
         if response_tx_id != transaction_id {
-            return Err(Error::Protocol(ProtocolError::TransactionIdMismatch(Mismatch::new(
-                transaction_id,
-                response_tx_id))));
+            return Err(Error::Protocol(ProtocolError::TransactionIdMismatch(
+                Mismatch::new(transaction_id, response_tx_id),
+            )));
         }
 
         if response_packet_type != protocol::RESPONSE_PACKET_TYPE {
-            return Err(Error::Protocol(ProtocolError::PacketTypeMismatch(Mismatch::new(
-                protocol::RESPONSE_PACKET_TYPE, response_packet_type))));
+            return Err(Error::Protocol(ProtocolError::PacketTypeMismatch(
+                Mismatch::new(protocol::RESPONSE_PACKET_TYPE, response_packet_type),
+            )));
         }
 
         let status = response.status;
@@ -281,10 +290,12 @@ impl<'a> Usbcommand {
             self.timeout_duration,
         )?;
 
+        assert!(transfer_size <= tx_data.len());
+
         let mut response = UsbCommandResponse::new();
 
         // Get the response status
-        self.device_handle.read_bulk(
+        let response_size = self.device_handle.read_bulk(
             self.endpoint_identifier.cmd_rx_endpoint,
             response.as_mut_bytes(),
             self.timeout_duration,
@@ -292,16 +303,23 @@ impl<'a> Usbcommand {
 
         let response_tx_id = response.packet_transaction_id;
         let response_packet_type = response.packet_type;
-        
+
+        if response_size != response.as_mut_bytes().len() {
+            return Err(Error::Protocol(ProtocolError::ResponseSizeMismatch(
+                Mismatch::new(response.as_mut_bytes().len(), response_size),
+            )));
+        }
+
         if response_tx_id != transaction_id {
-            return Err(Error::Protocol(ProtocolError::TransactionIdMismatch(Mismatch::new(
-                transaction_id,
-                response_tx_id))));
+            return Err(Error::Protocol(ProtocolError::TransactionIdMismatch(
+                Mismatch::new(transaction_id, response_tx_id),
+            )));
         }
 
         if response_packet_type != protocol::RESPONSE_PACKET_TYPE {
-            return Err(Error::Protocol(ProtocolError::PacketTypeMismatch(Mismatch::new(
-                protocol::RESPONSE_PACKET_TYPE, response_packet_type))));
+            return Err(Error::Protocol(ProtocolError::PacketTypeMismatch(
+                Mismatch::new(protocol::RESPONSE_PACKET_TYPE, response_packet_type),
+            )));
         }
 
         let status = response.status;
@@ -312,4 +330,23 @@ impl<'a> Usbcommand {
 
         Ok(transfer_size)
     }
+
+/*
+    pub fn stream_start(&mut self, payload_size : usize) -> Result<(), Error> {
+        
+        let timeout = self.timeout_duration;
+        let endpoint = self.endpoint_identifier.stream_endpoint;
+
+        let handle = self.device_handle;
+
+        std::thread::spawn(move || {
+
+            let mut buffer = [0; 1000];
+            handle.read_bulk(
+                endpoint, &mut buffer, timeout);
+        });
+
+        Ok(())
+    }
+    */
 }
