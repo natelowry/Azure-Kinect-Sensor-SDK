@@ -25,6 +25,7 @@ macro_rules! payload_size {
     };
 }
 
+#[derive(Copy, Clone)]
 pub enum SensorMode {
     PseudoCommon,
     LongThrowNative,

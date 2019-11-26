@@ -30,24 +30,28 @@ impl CaptureMode {
     }
 }
 
-pub struct DepthMcu {
+struct DepthMcuCommon {
     device: usbcommand::Usbcommand,
 }
 
+pub struct DepthMcu {
+    common: DepthMcuCommon,
+}
+
 pub struct PoweredDepthMcu {
-    device: usbcommand::Usbcommand,
+    common: DepthMcuCommon,
     mode: protocol::SensorMode,
 }
 
 pub struct StreamingDepthMcu {
-    device: usbcommand::Usbcommand,
+    common: Option<DepthMcuCommon>,
     mode: protocol::SensorMode,
 }
 
 
 impl DepthMcu {
     pub fn new(device: usbcommand::Usbcommand) -> Self {
-        Self { device: device }
+        Self { common: DepthMcuCommon{ device: device } }
     }
 
     /// Set the capture mode of the device, powering on the depth sensor
@@ -65,11 +69,11 @@ impl DepthMcu {
         let sensor_mode = mode.sensor_mode();
         let command_argument = sensor_mode.as_bytes();
 
-        self.device
+        self.common.device
             .write(command.command_code(), Option::Some(&command_argument), &[])?;
 
         Ok(PoweredDepthMcu {
-            device: self.device,
+            common: self.common,
             mode: sensor_mode,
         })
     }
@@ -88,7 +92,7 @@ impl PoweredDepthMcu {
         // Allocate a buffer larger than the total possible calibration size
         let mut cal_buffer = vec![0; 2000000];
 
-        let transferred = self.device.read(
+        let transferred = self.common.device.read(
             command.command_code(),
             Option::Some(&protocol::NvTag::IRSensorCalibration.as_bytes()),
             &mut cal_buffer,
@@ -105,19 +109,19 @@ impl PoweredDepthMcu {
         mut self,
         fps: protocol::FPS,
     ) -> Result<StreamingDepthMcu, usbcommand::Error> {
-        self.device().write(
+        self.common.device.write(
             protocol::DeviceCommands::DepthFPSSet.command_code(),
             Option::Some(&fps.as_bytes()),
             &[],
         )?;
 
-        self.device().write(
+        self.common.device.write(
             protocol::DeviceCommands::DepthStart.command_code(),
             Option::None,
             &[],
         )?;
 
-        self.device().write(
+        self.common.device.write(
             protocol::DeviceCommands::DepthStreamStart.command_code(),
             Option::None,
             &[],
@@ -126,10 +130,10 @@ impl PoweredDepthMcu {
         
         let payload_size = self.mode.payload_size().padded_size;
 
-        self.device.stream_start(payload_size)?;
+        self.common.device.stream_start(payload_size)?;
 
         Ok(StreamingDepthMcu {
-                device: self.device,
+                common: Option::Some(self.common),
                 mode: self.mode,
         }
             )
@@ -138,59 +142,118 @@ impl PoweredDepthMcu {
 
 impl StreamingDepthMcu {
 
+    fn stop_streaming_internal(&mut self) -> Result<(), usbcommand::Error> {
+            if let Option::Some(common) = self.common.as_mut() {
+                let device = &mut common.device;
+
+                device.stream_stop()?;
+            
+                device.write(
+                    protocol::DeviceCommands::DepthStreamStop.command_code(),
+                    Option::None,
+                    &[],
+                )?;
+
+                device.write(
+                    protocol::DeviceCommands::DepthStop.command_code(),
+                    Option::None,
+                    &[],
+                )?;
+            }
+            Ok(())
+    }
     pub fn stop_streaming(mut self) -> Result<PoweredDepthMcu, usbcommand::Error> {
 
-        self.device.stream_stop()?;
-    
-        self.device.write(
-            protocol::DeviceCommands::DepthStreamStop.command_code(),
-            Option::None,
-            &[],
-        )?;
-
-        self.device.write(
-            protocol::DeviceCommands::DepthStop.command_code(),
-            Option::None,
-            &[],
-        )?;
+        self.stop_streaming_internal()?;
 
         return Ok(PoweredDepthMcu {
-            device: self.device,
+            common: self.common.take().unwrap(),
             mode: self.mode,
         });
         
     }
 }
 
+impl Drop for StreamingDepthMcu {
+    fn drop(&mut self) {
+        let _ = self.stop_streaming_internal();
+    }
+}
+
 impl DepthMcuCommonOperations for DepthMcu {
-    fn device(&mut self) -> &mut usbcommand::Usbcommand {
-        &mut self.device
+    fn serialnum(&mut self) -> Result<String, usbcommand::Error>
+    {
+        self.common.serialnum()
+    }
+
+    fn wait_is_ready(&mut self) -> Result<(), usbcommand::Error>
+    {
+        self.common.wait_is_ready()
+    }
+
+    fn version(&mut self) -> Result<protocol::FirmwareVersions, usbcommand::Error>
+    {
+        self.common.version()
+    }
+
+    fn extrinsic_calibration(&mut self) -> Result<String, usbcommand::Error>
+    {
+        self.common.extrinsic_calibration()
     }
 }
 
 impl DepthMcuCommonOperations for PoweredDepthMcu {
-    fn device(&mut self) -> &mut usbcommand::Usbcommand {
-        &mut self.device
+    fn serialnum(&mut self) -> Result<String, usbcommand::Error>
+    {
+        self.common.serialnum()
+    }
+
+    fn wait_is_ready(&mut self) -> Result<(), usbcommand::Error>
+    {
+        self.common.wait_is_ready()
+    }
+
+    fn version(&mut self) -> Result<protocol::FirmwareVersions, usbcommand::Error>
+    {
+        self.common.version()
+    }
+
+    fn extrinsic_calibration(&mut self) -> Result<String, usbcommand::Error>
+    {
+        self.common.extrinsic_calibration()
     }
 }
 
 impl DepthMcuCommonOperations for StreamingDepthMcu {
-    fn device(&mut self) -> &mut usbcommand::Usbcommand {
-        &mut self.device
+    fn serialnum(&mut self) -> Result<String, usbcommand::Error>
+    {
+        self.common.as_mut().unwrap().serialnum()
+    }
+
+    fn wait_is_ready(&mut self) -> Result<(), usbcommand::Error>
+    {
+        self.common.as_mut().unwrap().wait_is_ready()
+    }
+
+    fn version(&mut self) -> Result<protocol::FirmwareVersions, usbcommand::Error>
+    {
+        self.common.as_mut().unwrap().version()
+    }
+
+    fn extrinsic_calibration(&mut self) -> Result<String, usbcommand::Error>
+    {
+        self.common.as_mut().unwrap().extrinsic_calibration()
     }
 }
 
-pub trait DepthMcuCommonOperations {
-    // TODO: any way to not leak this method outside of the crate?
-    fn device(&mut self) -> &mut usbcommand::Usbcommand;
-
+impl DepthMcuCommon {
     fn serialnum(&mut self) -> Result<String, usbcommand::Error> {
         let mut snbuffer: [u8; 128] = [0; 128];
 
         let command = protocol::DeviceCommands::DepthReadProductSN;
 
         let transferred =
-            self.device()
+            self.device
                 .read(command.command_code(), Option::None, &mut snbuffer)?;
 
         let slice = &snbuffer[0..transferred];
@@ -221,7 +284,7 @@ pub trait DepthMcuCommonOperations {
         let buffer = fwversions.as_mut_bytes();
 
         let transferred = self
-            .device()
+            .device
             .read(command.command_code(), Option::None, buffer)?;
 
         assert_eq!(transferred, buffer.len());
@@ -233,7 +296,7 @@ pub trait DepthMcuCommonOperations {
         // Over allocate a full megabyte
         let mut cal_buffer = vec![0; 1024 * 1024];
 
-        let transferred = self.device().read(
+        let transferred = self.device.read(
             protocol::DeviceCommands::DepthReadCalibrationData.command_code(),
             Option::None,
             &mut cal_buffer,
@@ -246,4 +309,14 @@ pub trait DepthMcuCommonOperations {
         // Convert the results to a String
         Ok(String::from_utf8(cal_buffer)?)
     }
+}
+
+pub trait DepthMcuCommonOperations {
+    fn serialnum(&mut self) -> Result<String, usbcommand::Error>;
+
+    fn wait_is_ready(&mut self) -> Result<(), usbcommand::Error>;
+
+    fn version(&mut self) -> Result<protocol::FirmwareVersions, usbcommand::Error>;
+
+    fn extrinsic_calibration(&mut self) -> Result<String, usbcommand::Error>;
 }

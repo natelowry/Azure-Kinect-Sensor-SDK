@@ -1,16 +1,48 @@
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        let mut img1 = Image::new(ImageFormat::default, 
+            100, 
+            100, 
+            100, 
+            Box::new([0u8; 30])
+            );
+
+        let mut img2 = Image::new(ImageFormat::default, 
+            100, 
+            100, 
+            100, 
+            Box::new(vec![0;40])
+            );
+
+        img1.set_iso_speed(100);
+
+        {
+            let mut buffer = img1.buffer().unwrap();
+
+            let mut b = (**buffer).as_mut();
+
+            b[0] = 3;
+        }
+
+        {
+            let mut buffer = img1.buffer().unwrap();
+
+            let b = (**buffer).as_mut();
+
+            assert_eq!(b[0], 3);
+        }
     }
 }
 
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Mutex};
 
 #[derive(Copy, Clone)]
 pub enum ImageFormat {
-
+    default
 }
 
 struct MutableImageState {
@@ -21,35 +53,33 @@ struct MutableImageState {
     iso_speed: u32,
 }
 
-struct ImageState<T>
-    where T : AsMut<[u8]>
+struct ImageState
 {
     mutable: RwLock<MutableImageState>,
-    buffer: T,
     format: ImageFormat,
     width_pixels: i32,
     height_pixels: i32,
     stride_bytes: i32,
+    buffer: Mutex<Box<dyn AsMut<[u8]>>>,
 }
 
-pub struct ImageImpl<T>
-    where T : AsMut<[u8]>
+pub struct Image
 {
-    state: Arc<ImageState<T>>
+    state: Arc<ImageState>,
 }
 
-impl<T> ImageImpl<T>
-    where T : AsMut<[u8]> {
 
+impl Image 
+{
     pub fn new(
         format: ImageFormat,
         width_pixels: i32,
         height_pixels: i32,
         stride_bytes: i32,
-        buffer: T
+        buffer: Box<dyn AsMut<[u8]>>
     ) 
     -> Self {
-        ImageImpl {
+        Image {
             state: Arc::new(
                 ImageState {
                     mutable: RwLock::new(
@@ -65,37 +95,12 @@ impl<T> ImageImpl<T>
                     width_pixels: width_pixels,
                     height_pixels: height_pixels,
                     stride_bytes: stride_bytes,
-                    buffer: buffer
+                    buffer: Mutex::new(buffer)
                 }
             )
         }
     }
-}
 
-
-trait Image {
-    fn format(&self) -> ImageFormat;
-    fn width_pixels(&self) -> i32;
-    fn height_pixels(&self) -> i32;
-    fn stride_bytes(&self) -> i32;
-    fn buffer(&mut self) -> &mut [u8];
-    fn device_timestamp_usec(&self) -> u64;
-    fn system_timestamp_nsec(&self) -> u64;
-    fn exposure_time_usec(&self) -> u64;
-    fn white_balance(&self) -> u32;
-    fn iso_speed(&self) -> u32;
-    fn set_device_timestamp_usec(&mut self, value: u64);
-    fn set_system_timestamp_nsec(&mut self, value: u64);
-    fn set_exposure_time_usec(&mut self, value: u64);
-    fn set_white_balance(&mut self, value: u32);
-    fn set_iso_speed(&mut self, value: u32);
-}
-
-
-
-impl<T> Image for ImageImpl<T> 
-where T : AsMut<[u8]>
-{
     fn format(&self) -> ImageFormat
     {
         self.state.format
@@ -112,16 +117,9 @@ where T : AsMut<[u8]>
     {
         self.state.stride_bytes
     }
-    fn buffer(&mut self) -> &mut [u8]
+    fn buffer(&mut self) -> std::sync::LockResult<std::sync::MutexGuard<Box<dyn AsMut<[u8]>>>>
     {
-        panic!("Don't know how to implement this yet")
-
-        // I think I need to implement an RAII guard pattern of some sort
-        // here, and I'm not sure if I can do it in safe code.
-
-        // The caller needs to get a pointer the mut [u8], but to be safe, they
-        // need to be holding a lock while they have it
-        
+        self.state.buffer.lock()
     }
     fn device_timestamp_usec(&self) -> u64
     {
