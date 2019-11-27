@@ -132,6 +132,7 @@ impl NvTag {
     }
 }
 
+#[derive(Debug)]
 #[repr(C, packed)]
 pub struct Version {
     major: u8,
@@ -139,6 +140,7 @@ pub struct Version {
     build: u16,
 }
 
+#[derive(Debug)]
 #[repr(C, packed)]
 pub struct FirmwareVersions {
     rgb: Version,

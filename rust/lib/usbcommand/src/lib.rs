@@ -84,7 +84,6 @@ pub struct Usbcommand {
     timeout_duration: std::time::Duration,
     transaction_id: u32,
     streaming_thread: Option<(std::sync::mpsc::Sender<()>, std::thread::JoinHandle<()>)>,
-
 }
 
 impl std::fmt::Debug for Usbcommand {
@@ -373,9 +372,7 @@ impl<'a> Usbcommand {
     }
 
     pub fn stream_stop(&mut self) -> Result<(), Error> {
-        
         if let Some((tx, join_handle)) = self.streaming_thread.take() {
-            
             // Signal the thread to exit
             tx.send(()).unwrap();
 
