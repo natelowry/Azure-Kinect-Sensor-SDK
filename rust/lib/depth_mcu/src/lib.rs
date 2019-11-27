@@ -128,7 +128,9 @@ impl DepthMcu<Powered> {
 
         let payload_size = self.state.mode.payload_size().padded_size;
 
-        self.device.stream_start(payload_size)?;
+        self.device.stream_start(payload_size, |mut buffer| {
+            println!("Read buffer. Size: {}", (*buffer).as_mut().len())
+        })?;
 
         Ok(DepthMcu {
             device: self.device,
