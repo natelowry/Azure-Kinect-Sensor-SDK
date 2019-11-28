@@ -32,9 +32,9 @@ fn main() {
 
     println!("extrinsic result: {}", mcu.extrinsic_calibration().unwrap());
 
-    let mut mcu = mcu.start_streaming(depth_mcu::FPS::Fps15).unwrap();
+    let mcu = mcu.start_streaming(depth_mcu::FPS::Fps15).unwrap();
 
-    std::thread::sleep_ms(20);
+    std::thread::sleep(std::time::Duration::from_millis(20));
 
     let mut mcu = mcu.stop_streaming().unwrap();
 

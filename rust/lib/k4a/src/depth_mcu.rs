@@ -3,8 +3,6 @@ mod protocol;
 pub use protocol::FPS;
 
 use crate::usbcommand;
-use crate::usbcommand::{Error, Usbcommand};
-use protocol::SensorMode;
 
 pub enum CaptureMode {
     Nfov2x2Binned,
@@ -27,7 +25,7 @@ impl CaptureMode {
 }
 
 pub struct DepthMcu<S> {
-    device: Usbcommand,
+    device: usbcommand::Usbcommand,
     state: S,
 }
 
@@ -42,7 +40,7 @@ pub struct Streaming {
 }
 
 impl DepthMcu<Off> {
-    pub fn new(device: Usbcommand) -> Self {
+    pub fn new(device: usbcommand::Usbcommand) -> Self {
         Self {
             device: device,
             state: Off {},
@@ -54,9 +52,12 @@ impl DepthMcu<Off> {
     /// This operation powers on the depth sensor, enabling new functionality
     /// provided by the PoweredDepthMcu type.
     ///
-    /// A failure in this method leaves the firmware in an indeterministic state
+    /// A failure in this method leaves the firmware in an nondeterministic state
     /// so the DepthMcu object can no longer safely be re-used.
-    pub fn set_capture_mode(mut self, mode: CaptureMode) -> Result<DepthMcu<Powered>, Error> {
+    pub fn set_capture_mode(
+        mut self,
+        mode: CaptureMode,
+    ) -> Result<DepthMcu<Powered>, usbcommand::Error> {
         let command = protocol::DeviceCommands::DepthModeSet;
         let sensor_mode = mode.sensor_mode();
         let command_argument = sensor_mode.as_bytes();
@@ -76,9 +77,9 @@ impl DepthMcu<Powered> {
     ///
     /// This operation can only be performed on a depth device that has been powered on.
     ///
-    /// A failure in this method leaves the firmware in an indeterministic state
+    /// A failure in this method leaves the firmware in an nondeterministic state
     /// so the PoweredDepthMcu object can no longer safely be re-used.
-    pub fn calibration(&mut self) -> Result<std::vec::Vec<u8>, Error> {
+    pub fn calibration(&mut self) -> Result<std::vec::Vec<u8>, usbcommand::Error> {
         let command = protocol::DeviceCommands::NVDataGet;
 
         // Allocate a buffer larger than the total possible calibration size
@@ -161,15 +162,17 @@ impl DepthMcu<Streaming> {
 
 impl<T> DepthMcu<T> {
     pub fn serialnum(&mut self) -> Result<String, usbcommand::Error> {
-        let mut snbuffer: [u8; 128] = [0; 128];
+        let mut serial_number_buffer: [u8; 128] = [0; 128];
 
         let command = protocol::DeviceCommands::DepthReadProductSN;
 
-        let transferred = self
-            .device
-            .read(command.command_code(), Option::None, &mut snbuffer)?;
+        let transferred = self.device.read(
+            command.command_code(),
+            Option::None,
+            &mut serial_number_buffer,
+        )?;
 
-        let slice = &snbuffer[0..transferred];
+        let slice = &serial_number_buffer[0..transferred];
         let vec = slice.to_vec();
 
         Ok(String::from_utf8(vec)?)
@@ -192,8 +195,8 @@ impl<T> DepthMcu<T> {
     }
 
     pub fn version(&mut self) -> Result<protocol::FirmwareVersions, usbcommand::Error> {
-        let mut fwversions = protocol::FirmwareVersions::new();
-        let buffer = fwversions.as_mut_bytes();
+        let mut versions = protocol::FirmwareVersions::new();
+        let buffer = versions.as_mut_bytes();
 
         let transferred = self.device.read(
             protocol::DeviceCommands::ComponentVersionGet.command_code(),
@@ -209,7 +212,7 @@ impl<T> DepthMcu<T> {
             ));
         }
 
-        return Ok(fwversions);
+        return Ok(versions);
     }
 
     pub fn extrinsic_calibration(&mut self) -> Result<String, usbcommand::Error> {

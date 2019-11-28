@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+
+#[derive(Copy, Clone)]
 pub struct UsbResult(pub u32);
 
 pub const USB_RESULT_OK: UsbResult = UsbResult(0);
@@ -125,7 +128,7 @@ impl UsbcommandPacket {
 }
 
 /// Response structure in USB commands
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct UsbCommandResponse {
     pub packet_type: u32,

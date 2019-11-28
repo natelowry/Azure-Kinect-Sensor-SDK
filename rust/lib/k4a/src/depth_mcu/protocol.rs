@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+
+
 /// Rounds a value up to an increment of size
 ///
 /// # Example
@@ -52,8 +55,6 @@ impl SensorMode {
         }
     }
 }
-
-pub const CALIBRATION_DATA_SIZE: u32 = 2000000;
 
 pub enum FPS {
     Fps5,
@@ -132,7 +133,7 @@ impl NvTag {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct Version {
     major: u8,
@@ -140,7 +141,7 @@ pub struct Version {
     build: u16,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(C, packed)]
 pub struct FirmwareVersions {
     rgb: Version,

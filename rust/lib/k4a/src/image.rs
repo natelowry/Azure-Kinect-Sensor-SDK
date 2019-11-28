@@ -1,34 +1,6 @@
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let mut img1 = Image::new(ImageFormat::default, 100, 100, 100, Box::new([0u8; 30]));
-
-        let mut img2 = Image::new(ImageFormat::default, 100, 100, 100, Box::new(vec![0; 40]));
-
-        *img1.iso_speed_mut() = 100;
-
-        {
-            let buffer = img1.buffer_mut();
-
-            buffer[0] = 3;
-        }
-
-        {
-            let mut buffer = img1.buffer_mut();
-
-            assert_eq!(buffer[0], 3);
-        }
-    }
-}
-
-use std::sync::{Arc, Mutex, RwLock};
-
 #[derive(Copy, Clone)]
 pub enum ImageFormat {
-    default,
+    Default,
 }
 
 struct MutableImageState {
@@ -119,5 +91,31 @@ impl Image {
     }
     pub fn iso_speed_mut(&mut self) -> &mut u32 {
         &mut self.mutable.iso_speed
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let mut img1 = Image::new(ImageFormat::Default, 100, 100, 100, Box::new([0u8; 30]));
+
+        let _ = Image::new(ImageFormat::Default, 100, 100, 100, Box::new(vec![0; 40]));
+
+        *img1.iso_speed_mut() = 100;
+
+        {
+            let buffer = img1.buffer_mut();
+
+            buffer[0] = 3;
+        }
+
+        {
+            let buffer = img1.buffer_mut();
+
+            assert_eq!(buffer[0], 3);
+        }
     }
 }

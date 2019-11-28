@@ -1,8 +1,4 @@
-#![allow(dead_code)]
-
 use rusb::UsbContext;
-
-use std::fmt::Debug;
 
 pub mod error;
 mod protocol;
@@ -59,11 +55,13 @@ mod tests {
     fn read_serial_number() {
         let mut cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
 
-        let mut snbuffer: [u8; 128] = [0; 128];
+        let mut serial_number_buffer: [u8; 128] = [0; 128];
 
-        let transferred = cmd.read(0x00000115, Option::None, &mut snbuffer).unwrap();
+        let transferred = cmd
+            .read(0x00000115, Option::None, &mut serial_number_buffer)
+            .unwrap();
 
-        let sn_from_cmd = String::from_utf8(snbuffer.to_vec()).unwrap();
+        let sn_from_cmd = String::from_utf8(serial_number_buffer.to_vec()).unwrap();
         let sn_from_descriptor = cmd.serial_number();
 
         println!("transferred: {}", transferred);
