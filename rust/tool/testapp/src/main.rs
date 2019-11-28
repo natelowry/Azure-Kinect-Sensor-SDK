@@ -1,8 +1,6 @@
-extern crate depth_mcu;
-extern crate usbcommand;
-
-use usbcommand::DeviceType;
-use usbcommand::Usbcommand;
+use k4a::depth_mcu;
+use k4a::usbcommand::DeviceType;
+use k4a::usbcommand::Usbcommand;
 
 fn main() {
     println!("Hello, world!");

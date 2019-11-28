@@ -1,5 +1,5 @@
 [package]
-name = "usbcommand"
+name = "k4a"
 version = "0.1.0"
 authors = ["brenta"]
 edition = "2018"

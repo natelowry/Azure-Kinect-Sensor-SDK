@@ -1,12 +1,10 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
-
 mod protocol;
+
+pub use protocol::FPS;
+
+use crate::usbcommand;
+use crate::usbcommand::{Error, Usbcommand};
+use protocol::SensorMode;
 
 pub enum CaptureMode {
     Nfov2x2Binned,
@@ -15,8 +13,6 @@ pub enum CaptureMode {
     WfovUnbinned,
     PassiveIR,
 }
-
-pub use protocol::FPS;
 
 impl CaptureMode {
     pub fn sensor_mode(&self) -> protocol::SensorMode {
@@ -31,7 +27,7 @@ impl CaptureMode {
 }
 
 pub struct DepthMcu<S> {
-    device: usbcommand::Usbcommand,
+    device: Usbcommand,
     state: S,
 }
 
@@ -46,7 +42,7 @@ pub struct Streaming {
 }
 
 impl DepthMcu<Off> {
-    pub fn new(device: usbcommand::Usbcommand) -> Self {
+    pub fn new(device: Usbcommand) -> Self {
         Self {
             device: device,
             state: Off {},
@@ -60,10 +56,7 @@ impl DepthMcu<Off> {
     ///
     /// A failure in this method leaves the firmware in an indeterministic state
     /// so the DepthMcu object can no longer safely be re-used.
-    pub fn set_capture_mode(
-        mut self,
-        mode: CaptureMode,
-    ) -> Result<DepthMcu<Powered>, usbcommand::Error> {
+    pub fn set_capture_mode(mut self, mode: CaptureMode) -> Result<DepthMcu<Powered>, Error> {
         let command = protocol::DeviceCommands::DepthModeSet;
         let sensor_mode = mode.sensor_mode();
         let command_argument = sensor_mode.as_bytes();
@@ -85,7 +78,7 @@ impl DepthMcu<Powered> {
     ///
     /// A failure in this method leaves the firmware in an indeterministic state
     /// so the PoweredDepthMcu object can no longer safely be re-used.
-    pub fn calibration(&mut self) -> Result<std::vec::Vec<u8>, usbcommand::Error> {
+    pub fn calibration(&mut self) -> Result<std::vec::Vec<u8>, Error> {
         let command = protocol::DeviceCommands::NVDataGet;
 
         // Allocate a buffer larger than the total possible calibration size
@@ -235,5 +228,13 @@ impl<T> DepthMcu<T> {
 
         // Convert the results to a String
         Ok(String::from_utf8(cal_buffer)?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
     }
 }
