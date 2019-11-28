@@ -84,7 +84,12 @@ pub struct UsbcommandPacket {
 }
 
 impl UsbcommandPacket {
-    pub fn new(command: u32, tx_id: u32, data: Option<&[u8]>, payload_size: u32) -> UsbcommandPacket {
+    pub fn new(
+        command: u32,
+        tx_id: u32,
+        data: Option<&[u8]>,
+        payload_size: u32,
+    ) -> UsbcommandPacket {
         let data_size: u32;
         let mut payload: [u8; 128] = [0; 128];
 
@@ -92,8 +97,7 @@ impl UsbcommandPacket {
             let s = &mut payload[0..x.len()];
             s.copy_from_slice(x);
             data_size = x.len() as u32;
-        }
-        else {
+        } else {
             data_size = 0;
         }
 
@@ -106,15 +110,14 @@ impl UsbcommandPacket {
                 reserved: 0,
             },
             data: payload,
-            data_size: data_size
+            data_size: data_size,
         }
     }
 
     pub fn as_bytes(&self) -> &[u8] {
         unsafe {
             let buffer = (self as *const UsbcommandPacket) as *const u8;
-            let size =
-                ::std::mem::size_of::<UsbcommandHeader>() + self.data_size as usize;
+            let size = ::std::mem::size_of::<UsbcommandHeader>() + self.data_size as usize;
 
             ::std::slice::from_raw_parts(buffer, size)
         }

@@ -22,8 +22,6 @@ fn main() {
 
     assert_eq!(sn, sn_descriptor);
 
-    
-
     let mut mcu = mcu
         .set_capture_mode(depth_mcu::CaptureMode::PassiveIR)
         .unwrap();

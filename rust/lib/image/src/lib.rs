@@ -19,7 +19,6 @@ mod tests {
         {
             let mut buffer = img1.buffer_mut();
 
-
             assert_eq!(buffer[0], 3);
         }
     }
@@ -49,7 +48,6 @@ pub struct Image {
     buffer: Box<dyn AsMut<[u8]>>,
 }
 
-
 impl Image {
     pub fn new(
         format: ImageFormat,
@@ -59,18 +57,18 @@ impl Image {
         buffer: Box<dyn AsMut<[u8]>>,
     ) -> Self {
         Image {
-                mutable: MutableImageState {
-                    device_timestamp_usec: 0,
-                    system_timestamp_nsec: 0,
-                    exposure_time_usec: 0,
-                    white_balance: 0,
-                    iso_speed: 0,
-                },
-                format: format,
-                width_pixels: width_pixels,
-                height_pixels: height_pixels,
-                stride_bytes: stride_bytes,
-                buffer: buffer,
+            mutable: MutableImageState {
+                device_timestamp_usec: 0,
+                system_timestamp_nsec: 0,
+                exposure_time_usec: 0,
+                white_balance: 0,
+                iso_speed: 0,
+            },
+            format: format,
+            width_pixels: width_pixels,
+            height_pixels: height_pixels,
+            stride_bytes: stride_bytes,
+            buffer: buffer,
         }
     }
 
@@ -86,7 +84,7 @@ impl Image {
     pub fn stride_bytes(&self) -> i32 {
         self.stride_bytes
     }
-    
+
     pub fn buffer_mut(&mut self) -> &mut [u8] {
         (*self.buffer).as_mut()
     }
@@ -105,7 +103,7 @@ impl Image {
     }
     pub fn iso_speed(&self) -> &u32 {
         &self.mutable.iso_speed
-    } 
+    }
 
     pub fn device_timestamp_usec_mut(&mut self) -> &mut u64 {
         &mut self.mutable.device_timestamp_usec
@@ -121,5 +119,5 @@ impl Image {
     }
     pub fn iso_speed_mut(&mut self) -> &mut u32 {
         &mut self.mutable.iso_speed
-    }    
+    }
 }

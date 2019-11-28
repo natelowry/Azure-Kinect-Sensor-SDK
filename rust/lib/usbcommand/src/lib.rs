@@ -11,8 +11,8 @@ pub use error::*;
 pub use protocol::UsbResult;
 
 use protocol::{EndpointIdentifier, UsbCommandResponse, UsbcommandPacket};
-use std::sync::{Arc, Mutex};
 use std::convert::TryInto;
+use std::sync::{Arc, Mutex};
 
 #[cfg(test)]
 mod tests {
@@ -212,7 +212,12 @@ impl<'a> Usbcommand {
         self.transaction_id = transaction_id + 1;
 
         // Construct the command packet (containing a header and the cmd_data in a contiguous block)
-        let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data, rx_data.len().try_into().unwrap());
+        let packet = UsbcommandPacket::new(
+            cmd_code,
+            transaction_id,
+            cmd_data,
+            rx_data.len().try_into().unwrap(),
+        );
 
         let device = self.device_handle.lock().unwrap();
 
@@ -283,7 +288,12 @@ impl<'a> Usbcommand {
         self.transaction_id = transaction_id + 1;
 
         // Construct the command packet (containing a header and the cmd_data in a contiguous block)
-        let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data, tx_data.len().try_into().unwrap());
+        let packet = UsbcommandPacket::new(
+            cmd_code,
+            transaction_id,
+            cmd_data,
+            tx_data.len().try_into().unwrap(),
+        );
 
         let device = self.device_handle.lock().unwrap();
 
@@ -350,7 +360,11 @@ impl<'a> Usbcommand {
         Ok(transfer_size)
     }
 
-    pub fn stream_start(&mut self, payload_size: usize, callback: fn(Box<dyn AsMut<[u8]>>)) -> Result<(), Error> {
+    pub fn stream_start(
+        &mut self,
+        payload_size: usize,
+        callback: fn(Box<dyn AsMut<[u8]>>),
+    ) -> Result<(), Error> {
         let timeout = self.timeout_duration;
         let endpoint = self.endpoint_identifier.stream_endpoint;
 
@@ -358,25 +372,21 @@ impl<'a> Usbcommand {
 
         let (tx, rx) = std::sync::mpsc::channel::<()>();
 
-        let join_handle = std::thread::spawn(move || {
-            
+        let join_handle = std::thread::spawn(move || loop {
+            let mut buffer = Box::new(vec![0; payload_size]);
+            if rx.try_recv().is_ok() {
+                return ();
+            }
 
-            loop {
-                let mut buffer = Box::new(vec![0; payload_size]);
-                if rx.try_recv().is_ok() {
-                    return ();
-                }
-
-                {
-                    let device = handle.lock().unwrap();
-                    println!("Reading from stream");
-                    match device.read_bulk(endpoint, &mut buffer, timeout) {
-                        Result::Ok(x) => {
-                            buffer.truncate(x);
-                            callback(buffer);
-                        },
-                        Result::Err(e) => println!("Error! {}", e),
+            {
+                let device = handle.lock().unwrap();
+                println!("Reading from stream");
+                match device.read_bulk(endpoint, &mut buffer, timeout) {
+                    Result::Ok(x) => {
+                        buffer.truncate(x);
+                        callback(buffer);
                     }
+                    Result::Err(e) => println!("Error! {}", e),
                 }
             }
         });
