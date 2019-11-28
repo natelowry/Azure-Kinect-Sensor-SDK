@@ -80,33 +80,33 @@ pub struct UsbcommandHeader {
 pub struct UsbcommandPacket {
     header: UsbcommandHeader,
     data: [u8; 128],
+    data_size: u32,
 }
 
 impl UsbcommandPacket {
-    pub fn new(command: u32, tx_id: u32, data: Option<&[u8]>) -> UsbcommandPacket {
+    pub fn new(command: u32, tx_id: u32, data: Option<&[u8]>, payload_size: u32) -> UsbcommandPacket {
         let data_size: u32;
         let mut payload: [u8; 128] = [0; 128];
 
-        match data {
-            Option::Some(x) => {
-                let s = &mut payload[0..x.len()];
-                s.copy_from_slice(x);
-                data_size = x.len() as u32;
-            }
-            Option::None => {
-                data_size = 0;
-            }
-        };
+        if let Some(x) = data {
+            let s = &mut payload[0..x.len()];
+            s.copy_from_slice(x);
+            data_size = x.len() as u32;
+        }
+        else {
+            data_size = 0;
+        }
 
         UsbcommandPacket {
             header: UsbcommandHeader {
                 packet_type: REQUEST_PACKET_TYPE,
                 packet_transaction_id: tx_id,
-                payload_size: data_size,
+                payload_size: payload_size,
                 command: command,
                 reserved: 0,
             },
             data: payload,
+            data_size: data_size
         }
     }
 
@@ -114,7 +114,7 @@ impl UsbcommandPacket {
         unsafe {
             let buffer = (self as *const UsbcommandPacket) as *const u8;
             let size =
-                ::std::mem::size_of::<UsbcommandPacket>() + self.header.payload_size as usize;
+                ::std::mem::size_of::<UsbcommandHeader>() + self.data_size as usize;
 
             ::std::slice::from_raw_parts(buffer, size)
         }
@@ -122,6 +122,7 @@ impl UsbcommandPacket {
 }
 
 /// Response structure in USB commands
+#[derive(Debug)]
 #[repr(C, packed)]
 pub struct UsbCommandResponse {
     pub packet_type: u32,
@@ -135,7 +136,7 @@ impl UsbCommandResponse {
         UsbCommandResponse {
             packet_type: 0,
             packet_transaction_id: 0,
-            status: UsbResult(0),
+            status: UsbResult(0xffffffff),
             reserved: 0,
         }
     }

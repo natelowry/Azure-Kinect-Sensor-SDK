@@ -12,6 +12,7 @@ pub use protocol::UsbResult;
 
 use protocol::{EndpointIdentifier, UsbCommandResponse, UsbcommandPacket};
 use std::sync::{Arc, Mutex};
+use std::convert::TryInto;
 
 #[cfg(test)]
 mod tests {
@@ -131,7 +132,7 @@ impl<'a> Usbcommand {
             }
         };
 
-        let timeout = std::time::Duration::new(10, 0);
+        let timeout = std::time::Duration::new(2, 0);
         let mut handle = device.open()?;
 
         let serial_number_string_index = device
@@ -154,6 +155,7 @@ impl<'a> Usbcommand {
             handle.set_active_configuration(1)?;
         }
 
+        // Ignoring errors, detach the kernel driver if it is active.
         if let Ok(active) = handle.kernel_driver_active(endpoint_identifier.interface) {
             if active == true {
                 handle.detach_kernel_driver(endpoint_identifier.interface)?;
@@ -210,16 +212,18 @@ impl<'a> Usbcommand {
         self.transaction_id = transaction_id + 1;
 
         // Construct the command packet (containing a header and the cmd_data in a contiguous block)
-        let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data);
+        let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data, rx_data.len().try_into().unwrap());
 
         let device = self.device_handle.lock().unwrap();
 
         // Send the command
-        device.write_bulk(
+        let command_bytes_written = device.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
             packet.as_bytes(),
             self.timeout_duration,
         )?;
+
+        assert!(command_bytes_written == packet.as_bytes().len());
 
         // Read the payload
         let transfer_size = device.read_bulk(
@@ -279,23 +283,31 @@ impl<'a> Usbcommand {
         self.transaction_id = transaction_id + 1;
 
         // Construct the command packet (containing a header and the cmd_data in a contiguous block)
-        let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data);
+        let packet = UsbcommandPacket::new(cmd_code, transaction_id, cmd_data, tx_data.len().try_into().unwrap());
 
         let device = self.device_handle.lock().unwrap();
 
         // Send the command
-        device.write_bulk(
+        let command_bytes_written = device.write_bulk(
             self.endpoint_identifier.cmd_tx_endpoint,
             packet.as_bytes(),
             self.timeout_duration,
         )?;
 
+        assert!(command_bytes_written == packet.as_bytes().len());
+
         // Write the payload
-        let transfer_size = device.write_bulk(
-            self.endpoint_identifier.cmd_tx_endpoint,
-            tx_data,
-            self.timeout_duration,
-        )?;
+        let transfer_size;
+        // Firmware does not expect a zero-length packet
+        if tx_data.len() > 0 {
+            transfer_size = device.write_bulk(
+                self.endpoint_identifier.cmd_tx_endpoint,
+                tx_data,
+                self.timeout_duration,
+            )?;
+        } else {
+            transfer_size = 0;
+        }
 
         assert!(transfer_size <= tx_data.len());
 
@@ -351,7 +363,6 @@ impl<'a> Usbcommand {
 
             loop {
                 if rx.try_recv().is_ok() {
-                    println!("Ended thread");
                     return ();
                 }
 
