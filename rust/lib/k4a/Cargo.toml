@@ -8,3 +8,7 @@ edition = "2018"
 
 [dependencies]
 rusb = "0.5"
+libloading = "0.5.2"
+
+[build-dependencies]
+bindgen = "0.51.1"

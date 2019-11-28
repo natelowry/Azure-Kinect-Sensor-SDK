@@ -3,3 +3,8 @@ members = [
   "lib/k4a",
   "tool/testapp"
 ]
+
+# The published libusb1-sys doesn't enable logging capability
+# Include git repo directly to get the latest 
+[patch.crates-io]
+libusb1-sys = { git = "https://github.com/a1ien/libusb1-sys" }
