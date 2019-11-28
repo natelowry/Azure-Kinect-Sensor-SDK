@@ -11,7 +11,7 @@ mod tests {
         *img1.iso_speed_mut() = 100;
 
         {
-            let mut buffer = img1.buffer_mut();
+            let buffer = img1.buffer_mut();
 
             buffer[0] = 3;
         }
@@ -74,52 +74,52 @@ impl Image {
         }
     }
 
-    fn format(&self) -> ImageFormat {
+    pub fn format(&self) -> ImageFormat {
         self.format
     }
-    fn width_pixels(&self) -> i32 {
+    pub fn width_pixels(&self) -> i32 {
         self.width_pixels
     }
-    fn height_pixels(&self) -> i32 {
+    pub fn height_pixels(&self) -> i32 {
         self.height_pixels
     }
-    fn stride_bytes(&self) -> i32 {
+    pub fn stride_bytes(&self) -> i32 {
         self.stride_bytes
     }
     
-    fn buffer_mut(&mut self) -> &mut [u8] {
+    pub fn buffer_mut(&mut self) -> &mut [u8] {
         (*self.buffer).as_mut()
     }
 
-    fn device_timestamp_usec(&self) -> &u64 {
+    pub fn device_timestamp_usec(&self) -> &u64 {
         &self.mutable.device_timestamp_usec
     }
-    fn system_timestamp_nsec(&self) -> &u64 {
+    pub fn system_timestamp_nsec(&self) -> &u64 {
         &self.mutable.system_timestamp_nsec
     }
-    fn exposure_time_usec(&self) -> &u64 {
+    pub fn exposure_time_usec(&self) -> &u64 {
         &self.mutable.exposure_time_usec
     }
-    fn white_balance(&self) -> &u32 {
+    pub fn white_balance(&self) -> &u32 {
         &self.mutable.white_balance
     }
-    fn iso_speed(&self) -> &u32 {
+    pub fn iso_speed(&self) -> &u32 {
         &self.mutable.iso_speed
     } 
 
-    fn device_timestamp_usec_mut(&mut self) -> &mut u64 {
+    pub fn device_timestamp_usec_mut(&mut self) -> &mut u64 {
         &mut self.mutable.device_timestamp_usec
     }
-    fn system_timestamp_nsec_mut(&mut self) -> &mut u64 {
+    pub fn system_timestamp_nsec_mut(&mut self) -> &mut u64 {
         &mut self.mutable.system_timestamp_nsec
     }
-    fn exposure_time_usec_mut(&mut self) -> &mut u64 {
+    pub fn exposure_time_usec_mut(&mut self) -> &mut u64 {
         &mut self.mutable.exposure_time_usec
     }
-    fn white_balance_mut(&mut self) -> &mut u32 {
+    pub fn white_balance_mut(&mut self) -> &mut u32 {
         &mut self.mutable.white_balance
     }
-    fn iso_speed_mut(&mut self) -> &mut u32 {
+    pub fn iso_speed_mut(&mut self) -> &mut u32 {
         &mut self.mutable.iso_speed
     }    
 }

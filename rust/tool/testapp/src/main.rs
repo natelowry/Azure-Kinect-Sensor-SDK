@@ -28,8 +28,8 @@ fn main() {
         .set_capture_mode(depth_mcu::CaptureMode::PassiveIR)
         .unwrap();
 
-    let version = mcu.version().unwrap();
-    println!("version: {:?}", version);
+    //let version = mcu.version().unwrap();
+    //println!("version: {:?}", version);
 
     let cal_data = mcu.calibration().unwrap();
     println!("cal result len: {}", cal_data.len());

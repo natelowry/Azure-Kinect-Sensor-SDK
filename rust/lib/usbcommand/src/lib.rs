@@ -350,7 +350,7 @@ impl<'a> Usbcommand {
         Ok(transfer_size)
     }
 
-    pub fn stream_start(&mut self, payload_size: usize) -> Result<(), Error> {
+    pub fn stream_start(&mut self, payload_size: usize, callback: fn(Box<dyn AsMut<[u8]>>)) -> Result<(), Error> {
         let timeout = self.timeout_duration;
         let endpoint = self.endpoint_identifier.stream_endpoint;
 
@@ -359,9 +359,10 @@ impl<'a> Usbcommand {
         let (tx, rx) = std::sync::mpsc::channel::<()>();
 
         let join_handle = std::thread::spawn(move || {
-            let mut buffer = vec![0; payload_size];
+            
 
             loop {
+                let mut buffer = Box::new(vec![0; payload_size]);
                 if rx.try_recv().is_ok() {
                     return ();
                 }
@@ -370,7 +371,10 @@ impl<'a> Usbcommand {
                     let device = handle.lock().unwrap();
                     println!("Reading from stream");
                     match device.read_bulk(endpoint, &mut buffer, timeout) {
-                        Result::Ok(x) => println!("Data! {}", x),
+                        Result::Ok(x) => {
+                            buffer.truncate(x);
+                            callback(buffer);
+                        },
                         Result::Err(e) => println!("Error! {}", e),
                     }
                 }
