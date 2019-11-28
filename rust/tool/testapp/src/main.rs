@@ -3,8 +3,6 @@ use k4a::usbcommand::DeviceType;
 use k4a::usbcommand::Usbcommand;
 
 fn main() {
-    println!("Hello, world!");
-
     let cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
 
     println!("PID: {}", cmd.pid());

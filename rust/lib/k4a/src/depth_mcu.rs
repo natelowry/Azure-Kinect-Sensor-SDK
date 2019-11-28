@@ -236,8 +236,50 @@ impl<T> DepthMcu<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::depth_mcu;
+    use crate::usbcommand::{DeviceType, Usbcommand};
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn off_commands() {
+        let cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
+
+        println!("PID: {}", cmd.pid());
+        println!("Serial Number: {}", cmd.serial_number());
+
+        let mut mcu = depth_mcu::DepthMcu::new(cmd);
+
+        println!("sn: {}", mcu.serialnum().unwrap());
+        println!("version: {:?}", mcu.version().unwrap());
+        println!(
+            "extrinsic_calibration: {:?}",
+            mcu.extrinsic_calibration().unwrap().len()
+        );
+    }
+
+    #[test]
+    fn streaming() {
+        let cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
+
+        println!("PID: {}", cmd.pid());
+        println!("Serial Number: {}", cmd.serial_number());
+
+        let mut mcu = depth_mcu::DepthMcu::new(cmd);
+
+        println!("sn: {}", mcu.serialnum().unwrap());
+
+        let mut mcu = mcu
+            .set_capture_mode(depth_mcu::CaptureMode::PassiveIR)
+            .unwrap();
+
+        println!("cal result len: {}", mcu.calibration().unwrap().len());
+        println!("extrinsic result: {}", mcu.extrinsic_calibration().unwrap());
+
+        let mcu = mcu.start_streaming(depth_mcu::FPS::Fps15).unwrap();
+
+        std::thread::sleep(std::time::Duration::from_millis(20));
+
+        let mut mcu = mcu.stop_streaming().unwrap();
+
+        println!("sn again: {}", mcu.serialnum().unwrap());
     }
 }

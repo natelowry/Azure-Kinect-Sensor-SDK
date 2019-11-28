@@ -41,8 +41,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn usbcommand_create() {
+    fn deviceattached_usbcommand_create() {
         let cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
 
         println!("PID: {}", cmd.pid());
@@ -52,7 +51,7 @@ mod tests {
     }
 
     #[test]
-    fn read_serial_number() {
+    fn deviceattached_read_serial_number() {
         let mut cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
 
         let mut serial_number_buffer: [u8; 128] = [0; 128];
@@ -67,6 +66,13 @@ mod tests {
         println!("transferred: {}", transferred);
         println!("SN from command       : {}", sn_from_cmd);
         println!("SN from usb descriptor: {}", sn_from_descriptor);
+    }
+
+    #[test]
+    fn deviceattached_repeated_open() {
+        for _ in 0..10 {
+            let _ = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
+        }
     }
 }
 
@@ -97,7 +103,7 @@ impl<'a> Usbcommand {
     /// # Examples
     ///
     /// ```
-    /// use usbcommand::{Usbcommand, DeviceType};
+    /// use k4a::usbcommand::{Usbcommand, DeviceType};
     /// let mut _cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
     /// ```
     pub fn open(device_type: DeviceType, device_index: usize) -> Result<Usbcommand, Error> {
@@ -177,7 +183,7 @@ impl<'a> Usbcommand {
     /// # Examples
     ///
     /// ```
-    /// use usbcommand::{Usbcommand, DeviceType};
+    /// use k4a::usbcommand::{Usbcommand, DeviceType};
     /// let mut cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
     /// let pid = cmd.pid();
     /// assert_ne!(pid, 0);
@@ -191,7 +197,7 @@ impl<'a> Usbcommand {
     /// # Examples
     ///
     /// ```
-    /// use usbcommand::{Usbcommand, DeviceType};
+    /// use k4a::usbcommand::{Usbcommand, DeviceType};
     /// let mut cmd = Usbcommand::open(DeviceType::DepthProcessor, 0).unwrap();
     /// let serial_number = cmd.serial_number();
     /// assert_eq!(serial_number, "000070792012");
