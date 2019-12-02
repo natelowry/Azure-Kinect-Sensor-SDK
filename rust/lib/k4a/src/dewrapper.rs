@@ -5,11 +5,18 @@ pub use bindings::k4a_plugin_version_t as Version;
 pub use error::Error;
 
 use libloading::{Library, Symbol};
+use std::sync::mpsc::{SyncSender, Receiver, sync_channel};
+
+enum InputMessage {
+    Terminate,
+    ProcessImage(crate::image::Image)
+}
 
 pub struct DepthEngine {
     lib: Library,
     plugin: bindings::_k4a_plugin_t,
-    thread_join_handle: std::thread::JoinHandle<()>,
+    thread_join_handle: Option<std::thread::JoinHandle<()>>,
+    input_tx: SyncSender<InputMessage>
 }
 
 const EXPECTED_VERSION : Version = Version { major: 2, minor: 1, patch: 0 };
@@ -64,24 +71,41 @@ impl DepthEngine {
         println!("plugin version {:?}", plugin.version);
 
         
-        let (tx, rx) = std::sync::mpsc::channel::<()>();
+        let (input_tx, input_rx) = std::sync::mpsc::sync_channel::<InputMessage>(5);
 
         let join_handle = std::thread::spawn(move || {
+            let rx = input_rx;
 
+            loop {
+                match rx.recv().unwrap() {
+                    InputMessage::Terminate => {
+                        break;
+                    }
+                    InputMessage::ProcessImage(image) => {
+
+                    }
+                }
+            }
         });
         
         Ok(DepthEngine {
             lib: lib,
             plugin: plugin,
-            thread_join_handle: join_handle,
+            thread_join_handle: Option::Some(join_handle),
+            input_tx: input_tx,
         })
     }
 
 } 
 
 impl Drop for DepthEngine {
-    fn drop(&mut self) {
 
+    
+    fn drop(&mut self) {
+        if let Some(join) = self.thread_join_handle.take() {
+            self.input_tx.send(InputMessage::Terminate).unwrap();
+            join.join().unwrap();
+        }
     }
 }
 

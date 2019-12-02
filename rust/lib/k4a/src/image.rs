@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 #[derive(Copy, Clone)]
 pub enum ImageFormat {
     Default,
@@ -17,7 +19,30 @@ pub struct Image {
     width_pixels: i32,
     height_pixels: i32,
     stride_bytes: i32,
-    buffer: Box<dyn AsMut<[u8]>>,
+    buffer: Box<dyn Buffer>,
+}
+
+pub struct BufferWrapper<T> where
+    T: AsMut<[u8]> + Send
+{
+    content: T,
+}
+
+pub trait Buffer : Send {
+    fn as_mut(&mut self) -> &mut [u8];
+}
+
+impl<T> Buffer for BufferWrapper<T> where T: AsMut<[u8]> + Send {
+    fn as_mut(&mut self) -> &mut [u8] {
+        self.content.as_mut()
+    }
+}
+
+impl<T> BufferWrapper<T> where
+    T: AsMut<[u8]> + Send {
+    pub fn new(content: T) -> BufferWrapper<T> {
+        BufferWrapper { content: content }
+    }
 }
 
 impl Image {
@@ -26,7 +51,7 @@ impl Image {
         width_pixels: i32,
         height_pixels: i32,
         stride_bytes: i32,
-        buffer: Box<dyn AsMut<[u8]>>,
+        buffer: Box<dyn Buffer>,
     ) -> Self {
         Image {
             mutable: MutableImageState {
@@ -99,10 +124,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let mut img1 = Image::new(ImageFormat::Default, 100, 100, 100, Box::new([0u8; 30]));
+    fn basic_image() {
+        let mut img1 = Image::new(ImageFormat::Default, 100, 100, 100, Box::new(BufferWrapper::new([0u8; 30])));
 
-        let _ = Image::new(ImageFormat::Default, 100, 100, 100, Box::new(vec![0; 40]));
+        let _ = Image::new(ImageFormat::Default, 100, 100, 100, Box::new(BufferWrapper::new(vec![0; 40])));
 
         *img1.iso_speed_mut() = 100;
 
