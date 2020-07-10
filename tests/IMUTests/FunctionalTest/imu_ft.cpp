@@ -11,7 +11,9 @@
 
 //**************Symbolic Constant Macros (defines)  *************
 #define STREAM_RUN_TIME_SEC 4
+#define STARTUP_DELAY_5S_IN_USEC (5 * 1000 * 1000)
 #define ERROR_START_STREAM_TIME 10000
+#define SECOND_TO_MICROSECONDS(sec) (sec * 1000 * 1000)
 
 // Total ACC range is +/- 147.15 m/s^2.
 #define MIN_ACC_READING -15.0f
@@ -78,35 +80,71 @@ static bool is_float_in_range(float value, float min, float max, const char *des
 static void RunStreamConfig(k4a_device_t device, uint32_t expected_fps)
 {
     uint32_t stream_count;
-    int32_t timeout_ms;
+    int32_t timeout_ms = ERROR_START_STREAM_TIME;
     k4a_imu_sample_t imu_sample;
     TICK_COUNTER_HANDLE tick_count;
     tickcounter_ms_t start_ms;
     tickcounter_ms_t end_ms;
     tickcounter_ms_t delta_ms;
     uint32_t error_tolerance;
+    int first_sample_inspected = 0;
+    k4a_wait_result_t wresult = K4A_WAIT_RESULT_SUCCEEDED;
+    k4a_device_configuration_t config;
 
-    stream_count = STREAM_RUN_TIME_SEC * expected_fps;
     tick_count = tickcounter_create();
 
-    k4a_device_configuration_t config = K4A_DEVICE_CONFIG_INIT_DISABLE_ALL;
+    {
+        // Typically this code only causes a delay when k4a_device_start_cameras was called less than
+        // STARTUP_DELAY_5S_IN_USEC seconds ago. Delay start of test upto 5 sec - IMU / Color camera firmware take a
+        // couple seconds to zero out timestamps. The SDK's color module may not properly filter out timestamps that
+        // will go backwards if started while the free running timestamp on the firmware is under 5s from the previous
+        // start. This is directly related to how the IMU module uses "color_camera_start_tick"
+        config = K4A_DEVICE_CONFIG_INIT_DISABLE_ALL;
+        config.depth_mode = K4A_DEPTH_MODE_PASSIVE_IR;
+        ASSERT_EQ(K4A_RESULT_SUCCEEDED, k4a_device_start_cameras(device, &config));
+        ASSERT_EQ(K4A_RESULT_SUCCEEDED, k4a_device_start_imu(device));
+        ASSERT_EQ(K4A_WAIT_RESULT_SUCCEEDED, k4a_device_get_imu_sample(device, &imu_sample, timeout_ms));
+        while (imu_sample.acc_timestamp_usec < STARTUP_DELAY_5S_IN_USEC)
+        {
+            ASSERT_EQ(K4A_WAIT_RESULT_SUCCEEDED, k4a_device_get_imu_sample(device, &imu_sample, timeout_ms));
+        }
+        k4a_device_stop_imu(device);
+        k4a_device_stop_cameras(device);
+    }
 
+    config = K4A_DEVICE_CONFIG_INIT_DISABLE_ALL;
     config.color_format = K4A_IMAGE_FORMAT_COLOR_MJPG;
     config.color_resolution = K4A_COLOR_RESOLUTION_2160P;
     config.depth_mode = K4A_DEPTH_MODE_NFOV_UNBINNED;
     config.camera_fps = K4A_FRAMES_PER_SECOND_30;
+    config.synchronized_images_only = false;
     ASSERT_EQ(K4A_RESULT_SUCCEEDED, k4a_device_start_cameras(device, &config));
 
     // start streaming.
     ASSERT_EQ(K4A_RESULT_SUCCEEDED, k4a_device_start_imu(device));
 
-    // allow stream start time
+    // Allow stream start time by tossing out first 'n' samples
     timeout_ms = ERROR_START_STREAM_TIME;
-    ASSERT_EQ(K4A_WAIT_RESULT_SUCCEEDED, k4a_device_get_imu_sample(device, &imu_sample, timeout_ms));
+    stream_count = 0;
+    while (wresult != K4A_WAIT_RESULT_FAILED && stream_count < 10)
+    {
+        k4a_capture_t capture;
+        // Toss out the first n samples
+        ASSERT_NE(wresult = k4a_device_get_capture(device, &capture, timeout_ms), K4A_WAIT_RESULT_FAILED);
+        k4a_capture_release(capture);
+        stream_count++;
+    }
+
+    // Drain IMU queue
+    while (wresult == K4A_WAIT_RESULT_SUCCEEDED)
+    {
+        ASSERT_NE(wresult = k4a_device_get_imu_sample(device, &imu_sample, 0), K4A_WAIT_RESULT_FAILED);
+    }
 
     // Start clock on getting frames
     tickcounter_get_current_ms(tick_count, &start_ms);
-    timeout_ms = 2000;
+
+    stream_count = STREAM_RUN_TIME_SEC * expected_fps;
 
     uint64_t last_gyro_dev_ts = 0;
     uint64_t last_acc_dev_ts = 0;
@@ -114,10 +152,27 @@ static void RunStreamConfig(k4a_device_t device, uint32_t expected_fps)
     {
         // get frames as available
         ASSERT_EQ(K4A_WAIT_RESULT_SUCCEEDED, k4a_device_get_imu_sample(device, &imu_sample, timeout_ms));
-
+        if (!first_sample_inspected)
+        {
+            // Time stamps should not go backwards and the first time stamps should be around zero as the color camera
+            // staring will device time stamps reset to zero.
+            ASSERT_LT(imu_sample.acc_timestamp_usec, SECOND_TO_MICROSECONDS(2));
+            ASSERT_LT(imu_sample.gyro_timestamp_usec, SECOND_TO_MICROSECONDS(2));
+            std::cout << "Initial Timestamps are: " << imu_sample.gyro_timestamp_usec << " and "
+                      << imu_sample.gyro_timestamp_usec << "\n";
+            first_sample_inspected = 1;
+        }
+        else
+        {
+            // Make sure not more than 10 samples were dropped.
+            ASSERT_LT(imu_sample.acc_timestamp_usec - last_acc_dev_ts, 10 * 1000000 / K4A_IMU_SAMPLE_RATE)
+                << " Last Sample " << last_acc_dev_ts << " Current Sample " << imu_sample.acc_timestamp_usec << "\n";
+            ASSERT_LT(imu_sample.gyro_timestamp_usec - last_gyro_dev_ts, 10 * 1000000 / K4A_IMU_SAMPLE_RATE)
+                << " Last Sample " << last_gyro_dev_ts << " Current Sample " << imu_sample.gyro_timestamp_usec << "\n";
+        }
         ASSERT_GT(imu_sample.acc_timestamp_usec, last_acc_dev_ts);
-        last_acc_dev_ts = imu_sample.acc_timestamp_usec;
         ASSERT_GT(imu_sample.gyro_timestamp_usec, last_gyro_dev_ts);
+        last_acc_dev_ts = imu_sample.acc_timestamp_usec;
         last_gyro_dev_ts = imu_sample.gyro_timestamp_usec;
 
         ASSERT_NE(imu_sample.temperature, 0);
@@ -127,6 +182,19 @@ static void RunStreamConfig(k4a_device_t device, uint32_t expected_fps)
         ASSERT_EQ(true, is_float_in_range(imu_sample.gyro_sample.xyz.x, MIN_GYRO_READING, MAX_GYRO_READING, "GYRO_X"));
         ASSERT_EQ(true, is_float_in_range(imu_sample.gyro_sample.xyz.y, MIN_GYRO_READING, MAX_GYRO_READING, "GYRO_Y"));
         ASSERT_EQ(true, is_float_in_range(imu_sample.gyro_sample.xyz.z, MIN_GYRO_READING, MAX_GYRO_READING, "GYRO_Z"));
+
+        k4a_capture_t capture;
+        ASSERT_NE(wresult = k4a_device_get_capture(device, &capture, 0), K4A_WAIT_RESULT_FAILED);
+        if (wresult == K4A_WAIT_RESULT_SUCCEEDED)
+        {
+            // printf("IMU PTS delta %" PRId64 " %" PRId64 " %" PRId64 " %" PRId64 " \n",
+            //        (int64_t)imu_sample.gyro_timestamp_usec - ts_c_dev,
+            //        (int64_t)imu_sample.acc_timestamp_usec - ts_c_dev,
+            //        (int64_t)imu_sample.gyro_timestamp_usec - ts_ir_dev,
+            //        (int64_t)imu_sample.acc_timestamp_usec - ts_ir_dev);
+
+            k4a_capture_release(capture);
+        }
 
         stream_count--;
     };

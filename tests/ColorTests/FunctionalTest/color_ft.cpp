@@ -716,7 +716,7 @@ int32_t color_control_test::map_manual_exposure(int32_t value, bool sixty_hertz)
 // Limit exposure setting based on FPS setting.
 int32_t color_control_test::limit_exposure_to_fps_setting(int32_t value, bool sixty_hertz, k4a_fps_t fps)
 {
-    int fps_usec = 1000000 / k4a_convert_fps_to_uint(fps);
+    int fps_usec = HZ_TO_PERIOD_US(k4a_convert_fps_to_uint(fps));
     int last_exposure;
 
     if (value < fps_usec)
@@ -930,17 +930,31 @@ void color_control_test::control_test_worker(const k4a_color_control_command_t c
 TEST_P(color_control_test, control_test)
 {
     auto as = GetParam();
-    if (as.command != K4A_COLOR_CONTROL_EXPOSURE_TIME_ABSOLUTE)
-    {
-        control_test_worker(as.command, as.default_mode, as.default_value);
-    }
-    else
+    if (as.command == K4A_COLOR_CONTROL_EXPOSURE_TIME_ABSOLUTE)
     {
         SET_POWER_LINE_FREQ(K4A_POWER_LINE_60HZ);
         control_test_worker(as.command, as.default_mode, EXPOSURE_TIME_ABSOLUTE_CONTROL_DEFAULT_60_HZ_VALUE);
 
         SET_POWER_LINE_FREQ(K4A_POWER_LINE_50HZ);
         control_test_worker(as.command, as.default_mode, EXPOSURE_TIME_ABSOLUTE_CONTROL_DEFAULT_50_HZ_VALUE);
+    }
+    else if (as.command == K4A_COLOR_CONTROL_GAIN)
+    {
+        k4a_hardware_version_t version;
+        ASSERT_EQ(K4A_RESULT_SUCCEEDED, k4a_device_get_version(m_device, &version));
+        k4a_version_t new_gain_default = { 1, 6, 107 };
+        if (k4a_is_version_greater_or_equal(&version.rgb, &new_gain_default))
+        {
+            control_test_worker(as.command, as.default_mode, 128);
+        }
+        else
+        {
+            control_test_worker(as.command, as.default_mode, 0);
+        }
+    }
+    else
+    {
+        control_test_worker(as.command, as.default_mode, as.default_value);
     }
 }
 

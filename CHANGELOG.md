@@ -1,9 +1,22 @@
 ## Change Log
 
-### v1.4.0
-* On Windows Opencv-4.1.1 is now being used and tested.
+### v1.4.1
 
-### v1.3.0
+* Added NEON for ARM64
+* Failed conversion of MJPEG to BGRA is now a warning - not an error.
+
+### v1.4.0
+
+* Added ARM64 Suport.
+* On Windows Opencv-4.1.1 is now being used and tested.
+* CPP; Adding record.hpp, updated playback.hpp
+* Fixed small error in transformation functions
+* Updated K4aRecorder allow:
+  * Setting manual exposure based on exposure time.
+  * Record BGRA32 format.
+* Added transformation API's to CSharp
+
+### v1.3.0 
 
 * On Windows VS dependencies are now dynamically linked and require redistributables for
 [VS2015](https://www.microsoft.com/en-us/download/details.aspx?id=48145) or newer.

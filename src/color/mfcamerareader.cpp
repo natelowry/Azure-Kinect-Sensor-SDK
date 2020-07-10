@@ -484,6 +484,10 @@ k4a_result_t CMFCameraReader::Start(const UINT32 width,
         LOG_WARNING("Start request in started state", 0);
     }
 
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failing with HRESULT:%08X", hr);
+    }
     return k4aResultFromHRESULT(hr);
 }
 
@@ -511,32 +515,32 @@ void CMFCameraReader::Stop()
         if (SUCCEEDED(hr = m_spSourceReader->Flush((DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM)))
         {
             m_flushing = true;
+
+            lock.Unlock(); // Wait without lock
+            do
+            {
+                // Wait until async operations are terminated for 10 sec
+                switch (WaitForSingleObject(m_hStreamFlushed, 10000))
+                {
+                case WAIT_OBJECT_0:
+                    // Flushing completed
+                    return;
+                case WAIT_TIMEOUT:
+                    LOG_ERROR("Timeout waiting for m_hStreamFlushed");
+                    break;
+                case WAIT_FAILED:
+                    LOG_ERROR("WaitForSingleObject on m_hStreamFlushed failed (%d)", GetLastError());
+                    assert(false);
+                    break;
+                default:
+                    break;
+                }
+            } while (1);
         }
         else
         {
             LOG_ERROR("Failed to request flush for stop: 0x%08x", hr);
         }
-
-        lock.Unlock(); // Wait without lock
-        do
-        {
-            // Wait until async operations are terminated for 10 sec
-            switch (WaitForSingleObject(m_hStreamFlushed, 10000))
-            {
-            case WAIT_OBJECT_0:
-                // Flushing completed
-                return;
-            case WAIT_TIMEOUT:
-                LOG_ERROR("Timeout waiting for m_hStreamFlushed");
-                break;
-            case WAIT_FAILED:
-                LOG_ERROR("WaitForSingleObject on m_hStreamFlushed failed (%d)", GetLastError());
-                assert(false);
-                break;
-            default:
-                break;
-            }
-        } while (1);
     }
 }
 
@@ -691,6 +695,10 @@ k4a_result_t CMFCameraReader::GetCameraControlCapabilities(const k4a_color_contr
         capabilities->valid = true;
     }
 
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failing command %u with HRESULT:%08X", command, hr);
+    }
     return k4aResultFromHRESULT(hr);
 }
 
@@ -819,6 +827,10 @@ k4a_result_t CMFCameraReader::GetCameraControl(const k4a_color_control_command_t
         *pValue = (int32_t)propertyValue;
     }
 
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failing command %u with HRESULT:%08X", command, hr);
+    }
     return k4aResultFromHRESULT(hr);
 }
 
@@ -925,9 +937,14 @@ k4a_result_t CMFCameraReader::SetCameraControl(const k4a_color_control_command_t
     }
     break;
     default:
+        LOG_ERROR("Failing, unknown command %u", command);
         return K4A_RESULT_FAILED;
     }
 
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failing command %u with HRESULT:%08X", command, hr);
+    }
     return k4aResultFromHRESULT(hr);
 }
 

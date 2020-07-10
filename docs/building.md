@@ -81,12 +81,12 @@ Windows PC is setup properly.*
 
 The list of libraries and tools that must be installed is maintained in a Dockerfile
 used by our CI system. Extract and run the install list from the 
-[Dockerfile](../scripts/Dockerfile) to ensure your machine has required dependencies.
+[Dockerfile](../scripts/docker/Dockerfile) to ensure your machine has required dependencies.
 
 The depth engine is needed as well. The depth engine (DE) is a closed source
 binary shipped with the Linux Debian package. As an example, run `apt install
 libk4a1.3` to install the Azure Kinect 1.3 and get the depth engine. See 
-[using the depth engine](docs/usage.md#debian-package) for information about
+[using the depth engine](usage.md#debian-package) for information about
 versioning and adding the Microsoft's Package Repository to your machine. **NOTE** *This step is not
 need for building, but is required running the SDK*
 
@@ -124,10 +124,6 @@ need for building, but is required running the SDK*
 
 Visual Studio 2017 supports opening CMake based projects directly.
 Use File / Open / CMake ... to open the root CMakeLists.txt in the project.
-
-To cross compile for Linux on Windows you can run a pre-configured
-[docker container](../docker/DOCKER.md) with the tools needed for Visual
-Studio.
 
 ### C# Wrapper
 
